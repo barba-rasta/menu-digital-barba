@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registrar Negocio - Menú Digital</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-gray-100 font-sans min-h-screen flex flex-col justify-between">
+
+  <div class="flex-grow flex items-center justify-center p-4">
+    <div class="max-w-md w-full bg-gray-800 p-8 rounded-3xl border border-gray-700 shadow-2xl space-y-6 my-8">
+      <div class="text-center space-y-2">
+        <h1 class="text-2xl font-black text-white">Registra tu Negocio</h1>
+        <p class="text-xs text-gray-400">Crea tu cuenta y empieza a personalizar tu catálogo</p>
+      </div>
+
+      <form id="register-form" class="space-y-4 text-xs">
+        <div>
+          <label class="block font-bold text-gray-300 mb-1">Nombre del Negocio</label>
+          <input type="text" id="r-name" required placeholder="Ej: Taquería El Pastor" class="w-full bg-gray-900 border border-gray-700 rounded-xl p-3 text-white focus:outline-none focus:border-indigo-500">
+        </div>
+
+        <div>
+          <label class="block font-bold text-gray-300 mb-1">Slug / Identificador Unico</label>
+          <input type="text" id="r-slug" required placeholder="ej: taqueria-el-pastor" class="w-full bg-gray-900 border border-gray-700 rounded-xl p-3 text-white focus:outline-none focus:border-indigo-500">
+          <p class="text-[10px] text-gray-500 mt-1">Este será tu enlace: /catalog.html?slug=<b>tu-slug</b></p>
+        </div>
+
+        <div>
+          <label class="block font-bold text-gray-300 mb-1">Correo Electrónico</label>
+          <input type="email" id="r-email" required placeholder="tu@email.com" class="w-full bg-gray-900 border border-gray-700 rounded-xl p-3 text-white focus:outline-none focus:border-indigo-500">
+        </div>
+
+        <div>
+          <label class="block font-bold text-gray-300 mb-1">Teléfono WhatsApp</label>
+          <input type="text" id="r-phone" required placeholder="Ej: 521234567890" class="w-full bg-gray-900 border border-gray-700 rounded-xl p-3 text-white focus:outline-none focus:border-indigo-500">
+        </div>
+
+        <div>
+          <label class="block font-bold text-gray-300 mb-1">Contraseña</label>
+          <input type="password" id="r-password" required placeholder="••••••••" class="w-full bg-gray-900 border border-gray-700 rounded-xl p-3 text-white focus:outline-none focus:border-indigo-500">
+        </div>
+
+        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold py-3.5 rounded-xl shadow-lg shadow-indigo-600/30 transition text-xs">
+          Crear Cuenta
+        </button>
+      </form>
+
+      <p class="text-center text-xs text-gray-400">
+        ¿Ya tienes una cuenta? <a href="/login.html" class="text-indigo-400 font-bold hover:underline">Inicia sesión</a>
+      </p>
+    </div>
+  </div>
+
+  <!-- Footer con Firma -->
+  <footer class="border-t border-gray-800/80 py-6 text-center text-xs text-gray-500 bg-gray-950/40">
+    <div class="max-w-6xl mx-auto px-4 space-y-1">
+      <p>© 2026 MenúDigital SaaS. Todos los derechos reservados.</p>
+      <p class="text-[11px] text-gray-600 font-mono tracking-wider">
+        Desarrollado con ❤️ por <span class="text-indigo-400 font-bold">Jorge Barba</span>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('register-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = e.target.querySelector('button[type="submit"]');
+      btn.disabled = true;
+      btn.textContent = 'Creando cuenta...';
+
+      try {
+        const res = await fetch('/api/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: document.getElementById('r-name').value.trim(),
+            slug: document.getElementById('r-slug').value.toLowerCase().trim().replace(/\s+/g, '-').replace(/[^a-z0-9\-]/g, ''),
+            email: document.getElementById('r-email').value.trim(),
+            phone: document.getElementById('r-phone').value.trim(),
+            password: document.getElementById('r-password').value
+          })
+        });
+
+        let data = {};
+        try { data = await res.json(); } catch (_) {}
+
+        if (res.ok) {
+          alert('¡Registro exitoso! Ahora inicia sesión.');
+          window.location.href = '/login.html';
+        } else {
+          alert(data.error || ('Error ' + res.status + ': No se pudo registrar. Revisa que el servidor y la base de datos estén activos.'));
+        }
+      } catch (err) {
+        alert('No se pudo conectar con el servidor.\n\nAsegúrate de que:\n1. El servidor Node esté corriendo (npm start)\n2. MySQL esté activo y configurado\n3. No abras el HTML como archivo local (usa http://localhost:3000)');
+        console.error(err);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Crear Cuenta';
+      }
+    });
+  </script>
+</body>
+</html>

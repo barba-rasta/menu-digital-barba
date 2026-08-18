@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crea tu Menú y Catálogo Digital</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-gray-100 font-sans min-h-screen flex flex-col justify-between">
+
+  <!-- Navbar -->
+  <nav class="max-w-6xl mx-auto w-full p-6 flex justify-between items-center">
+    <div class="flex items-center gap-2">
+      <div class="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center font-black text-white text-xl shadow-lg">M</div>
+      <span class="font-extrabold text-xl tracking-tight text-white">MenúDigital</span>
+    </div>
+    <div class="flex items-center gap-3 text-xs font-bold">
+      <a href="/directorio.html" class="px-4 py-2.5 rounded-xl bg-gray-800 text-gray-300 hover:bg-gray-700 transition border border-gray-700">Directorio</a>
+      <a href="/login.html" class="px-4 py-2.5 rounded-xl bg-gray-800 text-gray-300 hover:bg-gray-700 transition border border-gray-700">Iniciar Sesión</a>
+      <a href="/register.html" class="px-4 py-2.5 rounded-xl bg-indigo-600 text-white hover:bg-indigo-500 shadow-lg shadow-indigo-600/30 transition">Registrar mi Negocio</a>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <main class="max-w-4xl mx-auto px-6 py-12 text-center space-y-8 my-auto">
+    <span class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 text-xs font-bold">
+      🚀 La plataforma ideal para restaurantes, tiendas y servicios
+    </span>
+
+    <h1 class="text-4xl md:text-6xl font-black text-white leading-tight tracking-tight">
+      Lleva tu catálogo al siguiente nivel con tu propio <span class="bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">Menú Digital</span>
+    </h1>
+
+    <p class="text-gray-400 text-sm md:text-base max-w-2xl mx-auto leading-relaxed">
+      Personaliza colores, sube tus fotos, recibe opiniones con estrellas, conecta tus redes sociales y recibe pedidos por WhatsApp en minutos.
+    </p>
+
+    <div class="flex flex-col sm:flex-row justify-center items-center gap-4 pt-2">
+      <a href="/register.html" class="w-full sm:w-auto px-8 py-4 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-sm shadow-xl shadow-indigo-600/30 transition transform hover:-translate-y-0.5">
+        Crear mi catálogo gratis
+      </a>
+      <a href="/login.html" class="w-full sm:w-auto px-8 py-4 rounded-2xl bg-gray-800 hover:bg-gray-700 text-gray-200 font-bold text-sm border border-gray-700 transition">
+        Entrar a mi panel
+      </a>
+    </div>
+
+    <!-- Características -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-left pt-12">
+      <div class="bg-gray-800/50 p-5 rounded-2xl border border-gray-700/50 space-y-2">
+        <div class="text-2xl">🎨</div>
+        <h3 class="font-bold text-white text-sm">Personalización Total</h3>
+        <p class="text-xs text-gray-400 leading-relaxed">Personaliza tu color de marca, portada, logo, descripción y enlaces a tus redes sociales.</p>
+      </div>
+
+      <div class="bg-gray-800/50 p-5 rounded-2xl border border-gray-700/50 space-y-2">
+        <div class="text-2xl">📲</div>
+        <h3 class="font-bold text-white text-sm">Pedidos Directos</h3>
+        <p class="text-xs text-gray-400 leading-relaxed">Tus clientes exploran categorías, buscan productos y te envían el pedido directo a WhatsApp.</p>
+      </div>
+
+      <div class="bg-gray-800/50 p-5 rounded-2xl border border-gray-700/50 space-y-2">
+        <div class="text-2xl">⭐</div>
+        <h3 class="font-bold text-white text-sm">Reseñas y Ubicación</h3>
+        <p class="text-xs text-gray-400 leading-relaxed">Genera confianza con sistema de calificación por estrellas y botón de mapa en vivo.</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer con Firma -->
+  <footer class="border-t border-gray-800/80 py-6 text-center text-xs text-gray-500 bg-gray-950/40">
+    <div class="max-w-6xl mx-auto px-4 space-y-1">
+      <p>© 2026 MenúDigital SaaS. Todos los derechos reservados.</p>
+      <p class="text-[11px] text-gray-600 font-mono tracking-wider">
+        Desarrollado con ❤️ por <span class="text-indigo-400 font-bold">Jorge Barba</span>
+      </p>
+    </div>
+  </footer>
+
+</body>
+</html>

@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel de Administración - Menú Digital</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-gray-100 font-sans min-h-screen">
+
+  <!-- Login Admin -->
+  <div id="login-view" class="min-h-screen flex items-center justify-center p-4">
+    <div class="max-w-sm w-full bg-gray-800 p-8 rounded-3xl border border-gray-700 shadow-2xl space-y-6">
+      <div class="text-center space-y-2">
+        <div class="w-12 h-12 bg-red-600 rounded-2xl flex items-center justify-center font-black text-white text-xl shadow-lg mx-auto">A</div>
+        <h1 class="text-2xl font-black text-white">Administración</h1>
+        <p class="text-xs text-gray-400">Acceso restringido al panel de control</p>
+      </div>
+
+      <form id="admin-login-form" class="space-y-4 text-xs">
+        <div>
+          <label class="block font-bold text-gray-300 mb-1">Contraseña de administrador</label>
+          <input type="password" id="admin-password" required placeholder="••••••••" autofocus
+            class="w-full bg-gray-900 border border-gray-700 rounded-xl p-3 text-white focus:outline-none focus:border-red-500">
+        </div>
+        <button type="submit" class="w-full bg-red-600 hover:bg-red-500 text-white font-extrabold py-3.5 rounded-xl shadow-lg shadow-red-600/30 transition text-xs">
+          Entrar al panel
+        </button>
+      </form>
+
+      <p class="text-center text-xs text-gray-500">
+        <a href="/" class="text-indigo-400 hover:underline">← Volver al inicio</a>
+      </p>
+    </div>
+  </div>
+
+  <!-- Panel Admin -->
+  <div id="admin-view" class="hidden min-h-screen flex flex-col">
+    <nav class="border-b border-gray-800 bg-gray-950/80 backdrop-blur sticky top-0 z-10">
+      <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 bg-red-600 rounded-xl flex items-center justify-center font-black text-white text-sm shadow">A</div>
+          <div>
+            <span class="font-extrabold text-white text-sm">Admin</span>
+            <span class="text-gray-500 text-xs ml-2">MenúDigital</span>
+          </div>
+        </div>
+        <button id="btn-logout" class="text-xs font-bold px-4 py-2 rounded-xl bg-gray-800 border border-gray-700 text-gray-300 hover:bg-gray-700 transition">
+          Cerrar sesión
+        </button>
+      </div>
+    </nav>
+
+    <main class="max-w-6xl mx-auto w-full px-4 py-8 space-y-8 flex-grow">
+      <!-- Stats -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="bg-gray-800/60 border border-gray-700/60 rounded-2xl p-5">
+          <p class="text-xs text-gray-400 font-bold uppercase tracking-wider">Negocios</p>
+          <p id="stat-businesses" class="text-3xl font-black text-white mt-1">—</p>
+        </div>
+        <div class="bg-gray-800/60 border border-gray-700/60 rounded-2xl p-5">
+          <p class="text-xs text-gray-400 font-bold uppercase tracking-wider">Productos</p>
+          <p id="stat-products" class="text-3xl font-black text-white mt-1">—</p>
+        </div>
+        <div class="bg-gray-800/60 border border-gray-700/60 rounded-2xl p-5">
+          <p class="text-xs text-gray-400 font-bold uppercase tracking-wider">Comentarios</p>
+          <p id="stat-comments" class="text-3xl font-black text-white mt-1">—</p>
+        </div>
+      </div>
+
+      <!-- Tabla de negocios -->
+      <div class="bg-gray-800/40 border border-gray-700/50 rounded-2xl overflow-hidden">
+        <div class="px-5 py-4 border-b border-gray-700/50 flex justify-between items-center">
+          <h2 class="font-bold text-white text-sm">Usuarios registrados</h2>
+          <button id="btn-refresh" class="text-xs font-bold text-indigo-400 hover:text-indigo-300">Actualizar</button>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-gray-900/50 text-gray-400 uppercase tracking-wider">
+              <tr>
+                <th class="px-5 py-3 font-bold">ID</th>
+                <th class="px-5 py-3 font-bold">Negocio</th>
+                <th class="px-5 py-3 font-bold">Slug</th>
+                <th class="px-5 py-3 font-bold">Email</th>
+                <th class="px-5 py-3 font-bold">Teléfono</th>
+                <th class="px-5 py-3 font-bold text-center">Productos</th>
+                <th class="px-5 py-3 font-bold text-center">Reseñas</th>
+                <th class="px-5 py-3 font-bold text-right">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="businesses-tbody" class="divide-y divide-gray-700/40">
+              <tr>
+                <td colspan="8" class="px-5 py-8 text-center text-gray-500">Cargando...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+
+    <footer class="border-t border-gray-800/80 py-5 text-center text-xs text-gray-500">
+      <p>© 2026 MenúDigital SaaS · Panel de administración</p>
+      <p class="text-[11px] text-gray-600 mt-1">Desarrollado con ❤️ por <span class="text-indigo-400 font-bold">Jorge Barba</span></p>
+    </footer>
+  </div>
+
+  <script>
+    const ADMIN_TOKEN_KEY = 'admin_token';
+
+    function getToken() {
+      return localStorage.getItem(ADMIN_TOKEN_KEY);
+    }
+
+    function setToken(t) {
+      localStorage.setItem(ADMIN_TOKEN_KEY, t);
+    }
+
+    function clearToken() {
+      localStorage.removeItem(ADMIN_TOKEN_KEY);
+    }
+
+    function showLogin() {
+      document.getElementById('login-view').classList.remove('hidden');
+      document.getElementById('admin-view').classList.add('hidden');
+    }
+
+    function showAdmin() {
+      document.getElementById('login-view').classList.add('hidden');
+      document.getElementById('admin-view').classList.remove('hidden');
+      loadStats();
+      loadBusinesses();
+    }
+
+    // Login
+    document.getElementById('admin-login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = e.target.querySelector('button');
+      btn.disabled = true;
+      btn.textContent = 'Verificando...';
+
+      try {
+        const res = await fetch('/api/admin/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: document.getElementById('admin-password').value })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          setToken(data.token);
+          showAdmin();
+        } else {
+          alert(data.error || 'Contraseña incorrecta');
+        }
+      } catch (err) {
+        alert('No se pudo conectar con el servidor');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Entrar al panel';
+      }
+    });
+
+    document.getElementById('btn-logout').addEventListener('click', () => {
+      clearToken();
+      showLogin();
+    });
+
+    document.getElementById('btn-refresh').addEventListener('click', () => {
+      loadStats();
+      loadBusinesses();
+    });
+
+    async function api(path, options = {}) {
+      const headers = { ...(options.headers || {}), Authorization: 'Bearer ' + getToken() };
+      const res = await fetch(path, { ...options, headers });
+      if (res.status === 401 || res.status === 403) {
+        clearToken();
+        showLogin();
+        throw new Error('Sesión expirada');
+      }
+      return res;
+    }
+
+    async function loadStats() {
+      try {
+        const res = await api('/api/admin/stats');
+        const data = await res.json();
+        document.getElementById('stat-businesses').textContent = data.businesses ?? '—';
+        document.getElementById('stat-products').textContent = data.products ?? '—';
+        document.getElementById('stat-comments').textContent = data.comments ?? '—';
+      } catch (_) {}
+    }
+
+    async function loadBusinesses() {
+      const tbody = document.getElementById('businesses-tbody');
+      tbody.innerHTML = '<tr><td colspan="8" class="px-5 py-8 text-center text-gray-500">Cargando...</td></tr>';
+
+      try {
+        const res = await api('/api/admin/businesses');
+        const list = await res.json();
+
+        if (!Array.isArray(list) || list.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="8" class="px-5 py-8 text-center text-gray-500">No hay negocios registrados</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = list.map(b => `
+          <tr class="hover:bg-gray-800/40 transition">
+            <td class="px-5 py-3 text-gray-400">${b.id}</td>
+            <td class="px-5 py-3 font-bold text-white">${escapeHtml(b.name)}</td>
+            <td class="px-5 py-3">
+              <a href="/catalog.html?slug=${encodeURIComponent(b.slug)}" target="_blank" class="text-indigo-400 hover:underline font-mono">${escapeHtml(b.slug)}</a>
+            </td>
+            <td class="px-5 py-3 text-gray-300">${escapeHtml(b.email || '')}</td>
+            <td class="px-5 py-3 text-gray-300">${escapeHtml(b.phone || '—')}</td>
+            <td class="px-5 py-3 text-center">${b.productCount ?? 0}</td>
+            <td class="px-5 py-3 text-center">${b.commentCount ?? 0}</td>
+            <td class="px-5 py-3 text-right">
+              <button onclick="deleteBusiness(${b.id}, '${escapeHtml(b.name).replace(/'/g, "\\'")}')"
+                class="text-red-400 hover:text-red-300 font-bold text-[11px] px-2 py-1 rounded-lg hover:bg-red-500/10 transition">
+                Eliminar
+              </button>
+            </td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        tbody.innerHTML = '<tr><td colspan="8" class="px-5 py-8 text-center text-red-400">Error al cargar datos</td></tr>';
+      }
+    }
+
+    async function deleteBusiness(id, name) {
+      if (!confirm('¿Eliminar el negocio "' + name + '"?\nSe borrarán también sus productos y comentarios.')) return;
+      try {
+        const res = await api('/api/admin/businesses/' + id, { method: 'DELETE' });
+        const data = await res.json();
+        if (res.ok) {
+          loadStats();
+          loadBusinesses();
+        } else {
+          alert(data.error || 'No se pudo eliminar');
+        }
+      } catch (err) {
+        alert('Error de conexión');
+      }
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    // Auto-login si hay token
+    if (getToken()) {
+      showAdmin();
+    } else {
+      showLogin();
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel del Negocio - Menú Digital</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-gray-100 font-sans min-h-screen">
+
+  <nav class="border-b border-gray-800 bg-gray-950/80 backdrop-blur sticky top-0 z-20">
+    <div class="max-w-5xl mx-auto px-4 py-4 flex flex-wrap justify-between items-center gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center font-black text-white text-sm shadow">M</div>
+        <div>
+          <span id="nav-name" class="font-extrabold text-white text-sm">Mi Negocio</span>
+          <a id="nav-catalog" href="#" target="_blank" class="block text-[11px] text-indigo-400 hover:underline">Ver catálogo público →</a>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 text-xs font-bold">
+        <button data-tab="profile" class="tab-btn px-3 py-2 rounded-xl bg-indigo-600 text-white">Perfil</button>
+        <button data-tab="products" class="tab-btn px-3 py-2 rounded-xl bg-gray-800 text-gray-300 border border-gray-700">Productos</button>
+        <button data-tab="comments" class="tab-btn px-3 py-2 rounded-xl bg-gray-800 text-gray-300 border border-gray-700">Reseñas</button>
+        <button id="btn-logout" class="px-3 py-2 rounded-xl bg-gray-800 text-red-400 border border-gray-700 hover:bg-gray-700">Salir</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-5xl mx-auto px-4 py-8 space-y-6">
+
+    <!-- PERFIL -->
+    <section id="tab-profile" class="tab-panel space-y-4">
+      <h2 class="text-lg font-black text-white">Perfil del negocio</h2>
+      <form id="profile-form" class="bg-gray-800/50 border border-gray-700 rounded-2xl p-6 space-y-4 text-xs">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block font-bold text-gray-300 mb-1">Nombre</label>
+            <input id="p-name" type="text" class="w-full bg-gray-900 border border-gray-700 rounded-xl p-3 text-white focus:outline-none focus:border-indigo-500">
+          </div>
+          <div>
+            <label class="block font-bold text-gray-300 mb-1">Teléfono WhatsApp</label>
+            <input id="p-phone" type="text" class="w-full bg-gray-900 border border-gray-700 rounded-xl p-3 text-white focus:outline-none focus:border-indigo-500">
+          </div>
+          <div class="md:col-span-2">
+            <label class="block font-bold text-gray-300 mb-1">Descripción</label>
+            <textarea id="p-description" rows="2" class="w-full bg-gray-900 border border-gray-700 rounded-xl p-3 text-white focus:outline-none focus:border-indigo-500"></textarea>
+          </div>
+          <div>
+            <label class="block font-bold text-gray-300 mb-1">Dirección</label>
+            <input id="p-address" type="text" class="w-full bg-gray-900 border border-gray-700 rounded-xl p-3 text-white focus:outline-none focus:border-indigo-500">
+          </div>
+          <div>
+            <label class="block font-bold text-gray-300 mb-1">Horario</label>
+            <input id="p-hours" type="text" placeholder="9:00 AM - 8:00 PM" class="w-full bg-gray-900 border border-gray-700 rounded-xl p-3 text-white focus:outline-none focus:border-indigo-500">
+          </div>
+          <div>
+            <label class="block font-bold text-gray-300 mb-1">Color de marca</label>
+            <input id="p-theme" type="color" value="#4f46e5" class="w-full h-11 bg-gray-900 border border-gray-700 rounded-xl p-1 cursor-pointer">
+          </div>
+          <div>
+            <label class="block font-bold text-gray-300 mb-1">URL de Google Maps</label>
+            <input id="p-map" type="url" class="w-full bg-gray-900 border border-gray-700 rounded-xl p-3 text-white focus:outline-none focus:border-indigo-500">
+          </div>
+          <div>
+            <label class="block font-bold text-gray-300 mb-1">Facebook</label>
+            <input id="p-facebook" type="url" class="w-full bg-gray-900 border border-gray-700 rounded-xl p-3 text-white focus:outline-none focus:border-indigo-500">
+          </div>
+          <div>
+            <label class="block font-bold text-gray-300 mb-1">Instagram</label>
+            <input id="p-instagram" type="url" class="w-full bg-gray-900 border border-gray-700 rounded-xl p-3 text-white focus:outline-none focus:border-indigo-500">
+          </div>
+          <div>
+            <label class="block font-bold text-gray-300 mb-1">TikTok</label>
+            <input id="p-tiktok" type="url" class="w-full bg-gray-900 border border-gray-700 rounded-xl p-3 text-white focus:outline-none focus:border-indigo-500">
+          </div>
+          <div>
+            <label class="block font-bold text-gray-300 mb-1">Banner (imagen)</label>
+            <input id="p-banner" type="file" accept="image/*" class="w-full text-gray-400 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-indigo-600 file:text-white file:text-xs file:font-bold">
+          </div>
+          <div>
+            <label class="block font-bold text-gray-300 mb-1">Logo (imagen)</label>
+            <input id="p-logo" type="file" accept="image/*" class="w-full text-gray-400 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-indigo-600 file:text-white file:text-xs file:font-bold">
+          </div>
+        </div>
+        <button type="submit" class="w-full md:w-auto px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold shadow-lg shadow-indigo-600/30 transition">
+          Guardar perfil
+        </button>
+      </form>
+
+      <!-- Enlace corto + QR -->
+      <div class="bg-gray-800/50 border border-gray-700 rounded-2xl p-6 space-y-4">
+        <h3 class="font-bold text-white text-sm">Tu enlace corto y código QR</h3>
+        <p class="text-xs text-gray-400">Comparte este enlace o el QR para que tus clientes abran el menú al instante.</p>
+        <div class="flex flex-col sm:flex-row gap-4 items-start">
+          <div class="flex-1 space-y-2 text-xs w-full">
+            <label class="block font-bold text-gray-300">URL corta personalizada</label>
+            <div class="flex gap-2">
+              <input id="short-url" readonly type="text" class="flex-1 bg-gray-900 border border-gray-700 rounded-xl p-3 text-indigo-300 font-mono text-[11px]">
+              <button type="button" id="btn-copy-short" class="px-4 py-2 rounded-xl bg-indigo-600 text-white font-bold hover:bg-indigo-500">Copiar</button>
+            </div>
+            <label class="block font-bold text-gray-300 mt-3">URL completa del catálogo</label>
+            <div class="flex gap-2">
+              <input id="full-url" readonly type="text" class="flex-1 bg-gray-900 border border-gray-700 rounded-xl p-3 text-gray-300 font-mono text-[11px]">
+              <button type="button" id="btn-copy-full" class="px-4 py-2 rounded-xl bg-gray-700 text-white font-bold hover:bg-gray-600">Copiar</button>
+            </div>
+          </div>
+          <div class="text-center space-y-2">
+            <img id="qr-img" src="" alt="QR del menú" class="w-40 h-40 rounded-xl bg-white p-2 mx-auto">
+            <a id="qr-download" href="#" download="menu-qr.png" class="block text-[11px] text-indigo-400 font-bold hover:underline">Descargar QR</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRODUCTOS -->
+    <section id="tab-products" class="tab-panel hidden space-y-4">
+      <div class="flex justify-between items-center">
+        <h2 class="text-lg font-black text-white">Productos</h2>
+      </div>
+
+      <form id="product-form" class="bg-gray-800/50 border border-gray-700 rounded-2xl p-6 space-y-4 text-xs">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block font-bold text-gray-300 mb-1">Nombre *</label>
+            <input id="prod-name" required type="text" class="w-full bg-gray-900 border border-gray-700 rounded-xl p-3 text-white focus:outline-none focus:border-indigo-500">
+          </div>
+          <div>
+            <label class="block font-bold text-gray-300 mb-1">Categoría</label>
+            <input id="prod-category" type="text" placeholder="Tacos, Bebidas..." class="w-full bg-gray-900 border border-gray-700 rounded-xl p-3 text-white focus:outline-none focus:border-indigo-500">
+          </div>
+          <div>
+            <label class="block font-bold text-gray-300 mb-1">Precio *</label>
+            <input id="prod-price" required type="number" step="0.01" min="0" class="w-full bg-gray-900 border border-gray-700 rounded-xl p-3 text-white focus:outline-none focus:border-indigo-500">
+          </div>
+          <div>
+            <label class="block font-bold text-gray-300 mb-1">Imagen</label>
+            <input id="prod-image" type="file" accept="image/*" class="w-full text-gray-400 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-indigo-600 file:text-white file:text-xs file:font-bold">
+          </div>
+          <div class="md:col-span-2">
+            <label class="block font-bold text-gray-300 mb-1">Descripción</label>
+            <textarea id="prod-description" rows="2" class="w-full bg-gray-900 border border-gray-700 rounded-xl p-3 text-white focus:outline-none focus:border-indigo-500"></textarea>
+          </div>
+        </div>
+        <button type="submit" class="px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold shadow-lg shadow-indigo-600/30 transition">
+          Agregar producto
+        </button>
+      </form>
+
+      <div id="products-list" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
+    </section>
+
+    <!-- RESEÑAS -->
+    <section id="tab-comments" class="tab-panel hidden space-y-4">
+      <h2 class="text-lg font-black text-white">Reseñas de clientes</h2>
+      <div id="comments-list" class="space-y-3"></div>
+    </section>
+  </main>
+
+  <script>
+    const token = localStorage.getItem('token');
+    const slug = localStorage.getItem('slug');
+    if (!token) window.location.href = '/login.html';
+
+    document.getElementById('nav-name').textContent = localStorage.getItem('name') || 'Mi Negocio';
+    document.getElementById('nav-catalog').href = '/catalog.html?slug=' + encodeURIComponent(slug || '');
+
+    // Enlace corto + QR
+    (function setupShare() {
+      const origin = location.origin;
+      const shortUrl = origin + '/m/' + encodeURIComponent(slug || '');
+      const fullUrl = origin + '/catalog.html?slug=' + encodeURIComponent(slug || '');
+      document.getElementById('short-url').value = shortUrl;
+      document.getElementById('full-url').value = fullUrl;
+      const qrSrc = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' + encodeURIComponent(shortUrl);
+      document.getElementById('qr-img').src = qrSrc;
+      document.getElementById('qr-download').href = qrSrc;
+      document.getElementById('btn-copy-short').onclick = () => {
+        navigator.clipboard.writeText(shortUrl).then(() => alert('Enlace corto copiado'));
+      };
+      document.getElementById('btn-copy-full').onclick = () => {
+        navigator.clipboard.writeText(fullUrl).then(() => alert('Enlace copiado'));
+      };
+    })();
+
+    document.getElementById('btn-logout').onclick = () => {
+      localStorage.removeItem('token');
+      localStorage.removeItem('slug');
+      localStorage.removeItem('name');
+      window.location.href = '/login.html';
+    };
+
+    // Tabs
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => {
+          b.classList.remove('bg-indigo-600', 'text-white');
+          b.classList.add('bg-gray-800', 'text-gray-300', 'border', 'border-gray-700');
+        });
+        btn.classList.add('bg-indigo-600', 'text-white');
+        btn.classList.remove('bg-gray-800', 'text-gray-300', 'border', 'border-gray-700');
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+        document.getElementById('tab-' + btn.dataset.tab).classList.remove('hidden');
+      });
+    });
+
+    async function api(path, options = {}) {
+      const headers = { ...(options.headers || {}), Authorization: 'Bearer ' + token };
+      const res = await fetch(path, { ...options, headers });
+      if (res.status === 401) {
+        localStorage.clear();
+        window.location.href = '/login.html';
+        throw new Error('Sesión expirada');
+      }
+      return res;
+    }
+
+    // Cargar perfil
+    async function loadProfile() {
+      const res = await api('/api/business/profile');
+      const b = await res.json();
+      if (!b) return;
+      document.getElementById('p-name').value = b.name || '';
+      document.getElementById('p-phone').value = b.phone || '';
+      document.getElementById('p-description').value = b.description || '';
+      document.getElementById('p-address').value = b.address || '';
+      document.getElementById('p-hours').value = b.businessHours || '';
+      document.getElementById('p-theme').value = b.themeColor || '#4f46e5';
+      document.getElementById('p-map').value = b.mapUrl || '';
+      document.getElementById('p-facebook').value = b.facebookUrl || '';
+      document.getElementById('p-instagram').value = b.instagramUrl || '';
+      document.getElementById('p-tiktok').value = b.tiktokUrl || '';
+      document.getElementById('nav-name').textContent = b.name || 'Mi Negocio';
+    }
+
+    document.getElementById('profile-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData();
+      fd.append('name', document.getElementById('p-name').value);
+      fd.append('phone', document.getElementById('p-phone').value);
+      fd.append('description', document.getElementById('p-description').value);
+      fd.append('address', document.getElementById('p-address').value);
+      fd.append('businessHours', document.getElementById('p-hours').value);
+      fd.append('themeColor', document.getElementById('p-theme').value);
+      fd.append('mapUrl', document.getElementById('p-map').value);
+      fd.append('facebookUrl', document.getElementById('p-facebook').value);
+      fd.append('instagramUrl', document.getElementById('p-instagram').value);
+      fd.append('tiktokUrl', document.getElementById('p-tiktok').value);
+      const banner = document.getElementById('p-banner').files[0];
+      const logo = document.getElementById('p-logo').files[0];
+      if (banner) fd.append('banner', banner);
+      if (logo) fd.append('logo', logo);
+
+      const res = await api('/api/business/profile', { method: 'PUT', body: fd });
+      const data = await res.json();
+      if (res.ok) {
+        alert('Perfil actualizado');
+        localStorage.setItem('name', document.getElementById('p-name').value);
+        loadProfile();
+      } else {
+        alert(data.error || 'Error al guardar');
+      }
+    });
+
+    // Productos
+    async function loadProducts() {
+      const res = await api('/api/my-products');
+      const list = await res.json();
+      const el = document.getElementById('products-list');
+      if (!list.length) {
+        el.innerHTML = '<p class="text-gray-500 text-sm col-span-2">Aún no tienes productos. Agrega el primero arriba.</p>';
+        return;
+      }
+      el.innerHTML = list.map(p => `
+        <div class="bg-gray-800/50 border border-gray-700 rounded-2xl p-4 flex gap-3 items-start">
+          ${p.image ? `<img src="${p.image}" class="w-16 h-16 rounded-xl object-cover flex-shrink-0">` : '<div class="w-16 h-16 rounded-xl bg-gray-700 flex-shrink-0"></div>'}
+          <div class="flex-1 min-w-0">
+            <p class="font-bold text-white text-sm truncate">${esc(p.name)}</p>
+            <p class="text-[11px] text-gray-400">${esc(p.category || 'General')} · $${Number(p.price).toFixed(2)}</p>
+            <p class="text-[11px] text-gray-500 mt-1 line-clamp-2">${esc(p.description || '')}</p>
+          </div>
+          <button onclick="deleteProduct(${p.id})" class="text-red-400 hover:text-red-300 text-[11px] font-bold flex-shrink-0">Eliminar</button>
+        </div>
+      `).join('');
+    }
+
+    async function deleteProduct(id) {
+      if (!confirm('¿Eliminar este producto?')) return;
+      await api('/api/products/' + id, { method: 'DELETE' });
+      loadProducts();
+    }
+
+    document.getElementById('product-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData();
+      fd.append('name', document.getElementById('prod-name').value);
+      fd.append('category', document.getElementById('prod-category').value || 'General');
+      fd.append('price', document.getElementById('prod-price').value);
+      fd.append('description', document.getElementById('prod-description').value);
+      const img = document.getElementById('prod-image').files[0];
+      if (img) fd.append('media', img);
+
+      const res = await api('/api/products', { method: 'POST', body: fd });
+      const data = await res.json();
+      if (res.ok) {
+        e.target.reset();
+        loadProducts();
+      } else {
+        alert(data.error || 'Error al guardar producto');
+      }
+    });
+
+    // Comentarios
+    async function loadComments() {
+      const res = await api('/api/my-comments');
+      const list = await res.json();
+      const el = document.getElementById('comments-list');
+      if (!list.length) {
+        el.innerHTML = '<p class="text-gray-500 text-sm">Aún no hay reseñas.</p>';
+        return;
+      }
+      el.innerHTML = list.map(c => `
+        <div class="bg-gray-800/50 border border-gray-700 rounded-2xl p-4 flex justify-between gap-3">
+          <div>
+            <p class="font-bold text-white text-sm">${esc(c.author)} <span class="text-yellow-400 text-xs ml-1">${'★'.repeat(c.rating || 5)}</span></p>
+            <p class="text-xs text-gray-400 mt-1">${esc(c.text)}</p>
+            <p class="text-[10px] text-gray-600 mt-1">${c.createdAt ? new Date(c.createdAt).toLocaleString('es-MX') : ''}</p>
+          </div>
+          <button onclick="deleteComment(${c.id})" class="text-red-400 hover:text-red-300 text-[11px] font-bold flex-shrink-0">Eliminar</button>
+        </div>
+      `).join('');
+    }
+
+    async function deleteComment(id) {
+      if (!confirm('¿Eliminar esta reseña?')) return;
+      await api('/api/comments/' + id, { method: 'DELETE' });
+      loadComments();
+    }
+
+    function esc(s) {
+      if (!s) return '';
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    loadProfile();
+    loadProducts();
+    loadComments();
+  </script>
+</body>
+</html>

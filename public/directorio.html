@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Directorio de Negocios - Menú Digital</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-gray-100 font-sans min-h-screen">
+
+  <nav class="border-b border-gray-800 bg-gray-950/80 backdrop-blur sticky top-0 z-10">
+    <div class="max-w-5xl mx-auto px-4 py-4 flex justify-between items-center">
+      <a href="/" class="flex items-center gap-2">
+        <div class="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center font-black text-white text-sm shadow">M</div>
+        <span class="font-extrabold text-white text-sm">MenúDigital</span>
+      </a>
+      <div class="flex gap-2 text-xs font-bold">
+        <a href="/directorio.html" class="px-3 py-2 rounded-xl bg-indigo-600 text-white">Directorio</a>
+        <a href="/login.html" class="px-3 py-2 rounded-xl bg-gray-800 text-gray-300 border border-gray-700">Entrar</a>
+        <a href="/register.html" class="px-3 py-2 rounded-xl bg-gray-800 text-gray-300 border border-gray-700">Registrar</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-5xl mx-auto px-4 py-8 space-y-6">
+    <div class="text-center space-y-2 mb-8">
+      <h1 class="text-3xl font-black text-white">Directorio de negocios</h1>
+      <p class="text-sm text-gray-400">Explora los menús y catálogos digitales registrados</p>
+      <input id="search" type="search" placeholder="Buscar por nombre o descripción..."
+        class="mt-4 w-full max-w-md mx-auto block bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500">
+    </div>
+
+    <div id="loading" class="text-center text-gray-500 text-sm py-12">Cargando negocios...</div>
+    <div id="grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 hidden"></div>
+    <div id="empty" class="hidden text-center text-gray-500 text-sm py-12">No hay negocios registrados aún.</div>
+  </main>
+
+  <footer class="border-t border-gray-800 py-6 text-center text-xs text-gray-500">
+    <p>© 2026 MenúDigital · Desarrollado por <span class="text-indigo-400 font-bold">Jorge Barba</span></p>
+  </footer>
+
+  <script>
+    let all = [];
+
+    async function load() {
+      try {
+        const res = await fetch('/api/directory');
+        all = await res.json();
+        document.getElementById('loading').classList.add('hidden');
+        if (!Array.isArray(all) || !all.length) {
+          document.getElementById('empty').classList.remove('hidden');
+          return;
+        }
+        document.getElementById('grid').classList.remove('hidden');
+        render(all);
+      } catch {
+        document.getElementById('loading').textContent = 'Error al cargar el directorio';
+      }
+    }
+
+    function render(list) {
+      const grid = document.getElementById('grid');
+      grid.innerHTML = list.map(b => {
+        const color = b.themeColor || '#4f46e5';
+        const short = '/m/' + encodeURIComponent(b.slug);
+        const catalog = '/catalog.html?slug=' + encodeURIComponent(b.slug);
+        return `
+          <a href="${catalog}" class="block bg-gray-800/60 border border-gray-700/60 rounded-2xl overflow-hidden hover:border-indigo-500/50 transition group">
+            <div class="h-28 bg-gradient-to-br from-gray-700 to-gray-900 relative" style="background: linear-gradient(135deg, ${color}55, #111827)">
+              ${b.bannerImage ? `<img src="${esc(b.bannerImage)}" class="w-full h-full object-cover opacity-80" alt="">` : ''}
+              <div class="absolute -bottom-6 left-4 w-14 h-14 rounded-xl border-4 border-gray-800 bg-gray-700 overflow-hidden flex items-center justify-center shadow-lg">
+                ${b.logoImage
+                  ? `<img src="${esc(b.logoImage)}" class="w-full h-full object-cover" alt="">`
+                  : `<span class="text-lg font-black text-white">${esc((b.name||'N')[0])}</span>`}
+              </div>
+            </div>
+            <div class="pt-8 px-4 pb-4 space-y-2">
+              <h2 class="font-bold text-white text-sm group-hover:text-indigo-300 transition truncate">${esc(b.name)}</h2>
+              <p class="text-[11px] text-gray-400 line-clamp-2 min-h-[2.5em]">${esc(b.description || 'Sin descripción')}</p>
+              <div class="flex items-center justify-between text-[11px] text-gray-500 pt-1">
+                <span class="text-yellow-400 font-bold">★ ${b.avgRating || '5.0'}</span>
+                <span>${b.productCount || 0} productos</span>
+              </div>
+              <div class="flex gap-2 pt-2">
+                <span class="text-[10px] font-mono text-indigo-400 bg-indigo-500/10 px-2 py-1 rounded-lg truncate">${short}</span>
+              </div>
+            </div>
+          </a>`;
+      }).join('');
+    }
+
+    document.getElementById('search').addEventListener('input', (e) => {
+      const q = e.target.value.toLowerCase().trim();
+      if (!q) return render(all);
+      render(all.filter(b =>
+        (b.name || '').toLowerCase().includes(q) ||
+        (b.description || '').toLowerCase().includes(q) ||
+        (b.slug || '').toLowerCase().includes(q)
+      ));
+    });
+
+    function esc(s) {
+      if (!s) return '';
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    load();
+  </script>
+</body>
+</html>
