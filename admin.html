@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Administración Central | MenuPro</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter','system-ui','sans-serif'] },
+          colors: {
+            brand: { 50:'#eef2ff',100:'#e0e7ff',200:'#c7d2fe',300:'#a5b4fc',400:'#818cf8',500:'#6366f1',600:'#4f46e5',700:'#4338ca',800:'#3730a3',900:'#312e81' },
+            dark: { 50:'#f8fafc',100:'#f1f5f9',200:'#e2e8f0',300:'#cbd5e1',400:'#94a3b8',500:'#64748b',600:'#475569',700:'#334155',800:'#1e293b',900:'#0f172a',950:'#020617' }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Inter', system-ui, sans-serif; }
+    .card { background: rgba(30,41,59,0.5); border: 1px solid rgba(51,65,85,0.4); border-radius: 1rem; }
+    .card-hover { transition: all 0.25s cubic-bezier(0.4,0,0.2,1); }
+    .card-hover:hover { border-color: rgba(99,102,241,0.25); box-shadow: 0 8px 30px -8px rgba(99,102,241,0.12); }
+    .input-dark { background: #0f172a; border: 1px solid #334155; border-radius: 0.75rem; color: white; transition: all 0.2s; }
+    .input-dark:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.12); outline: none; }
+    .input-dark::placeholder { color: #475569; }
+    .btn-primary { background: #4f46e5; color: white; font-weight: 600; border-radius: 0.75rem; transition: all 0.2s; }
+    .btn-primary:hover { background: #6366f1; box-shadow: 0 4px 20px -4px rgba(99,102,241,0.35); }
+    .btn-ghost { background: transparent; border: 1px solid #334155; color: #94a3b8; font-weight: 500; border-radius: 0.75rem; transition: all 0.2s; }
+    .btn-ghost:hover { background: #1e293b; color: white; border-color: #475569; }
+    .btn-danger { background: #dc2626; color: white; font-weight: 600; border-radius: 0.75rem; transition: all 0.2s; }
+    .btn-danger:hover { background: #ef4444; }
+    .toast { position: fixed; bottom: 24px; right: 24px; z-index: 100; transform: translateY(100px); opacity: 0; transition: all 0.4s cubic-bezier(0.175,0.885,0.32,1.275); }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(2,6,23,0.88); backdrop-filter: blur(12px); z-index: 50; display: none; align-items: center; justify-content: center; padding: 1rem; }
+    .modal-overlay.active { display: flex; }
+    .fade-in { animation: fadeIn 0.35s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .scrollbar-hide::-webkit-scrollbar { display: none; }
+    .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+    .status-active { background: #10b981; box-shadow: 0 0 8px #10b981; }
+    .status-inactive { background: #ef4444; }
+    .progress-bar { height: 4px; border-radius: 2px; background: #1e293b; overflow: hidden; }
+    .progress-fill { height: 100%; border-radius: 2px; transition: width 0.6s ease; }
+    .table-row { transition: background 0.15s; }
+    .table-row:hover { background: rgba(99,102,241,0.04); }
+  </style>
+</head>
+<body class="bg-dark-950 text-dark-100 min-h-screen font-sans antialiased selection:bg-brand-500 selection:text-white">
+
+  <!-- Login Modal -->
+  <div id="login-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-dark-950/90 backdrop-blur-xl">
+    <div class="w-full max-w-md bg-dark-900 border border-dark-800 rounded-2xl p-8 shadow-2xl relative overflow-hidden">
+      <div class="absolute -top-10 -right-10 w-40 h-40 bg-brand-500/8 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="absolute -bottom-10 -left-10 w-40 h-40 bg-purple-500/8 rounded-full blur-3xl pointer-events-none"></div>
+
+      <div class="text-center mb-8 relative">
+        <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-brand-500/10 border border-brand-500/20 text-brand-400 mb-4 text-2xl shadow-lg shadow-brand-500/10">🛡️</div>
+        <h1 class="text-2xl font-black tracking-tight text-white">Administración Central</h1>
+        <p class="text-xs text-dark-500 mt-1.5">Ingresa la clave maestra para gestionar el sistema</p>
+      </div>
+
+      <form id="admin-login-form" class="space-y-5">
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-dark-500 mb-2">Contraseña Maestra</label>
+          <div class="relative">
+            <input type="password" id="admin-pass" required placeholder="••••••••••••" 
+                   class="w-full input-dark px-4 py-3.5 text-sm text-white placeholder-dark-600 focus:outline-none">
+            <button type="button" onclick="togglePass()" class="absolute right-3 top-3.5 text-dark-500 hover:text-dark-300 text-sm" id="eye-btn">👁</button>
+          </div>
+        </div>
+        <button type="submit" id="login-btn" class="w-full btn-primary py-3.5 text-sm shadow-lg shadow-brand-600/20 flex items-center justify-center gap-2">
+          <span id="login-text">Acceder al Panel</span>
+          <span id="login-spinner" class="hidden w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Main Dashboard -->
+  <div id="dashboard-content" class="hidden min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="border-b border-dark-800 bg-dark-950/70 backdrop-blur-xl sticky top-0 z-40">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm">M</div>
+          <span class="font-extrabold text-lg tracking-tight text-white">Menu<span class="text-brand-400">Pro</span> <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-brand-500/10 border border-brand-500/20 text-brand-400 ml-1.5">SuperAdmin</span></span>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <span id="connection-status" class="hidden sm:inline-flex items-center gap-1.5 text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-full">
+            <span class="status-dot status-active"></span> Sistema Activo
+          </span>
+          <span id="last-sync" class="hidden md:block text-[10px] text-dark-600"></span>
+          <button onclick="refreshData()" class="text-dark-500 hover:text-white p-2 rounded-lg hover:bg-dark-800 transition" title="Actualizar">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          </button>
+          <button onclick="exportData()" class="hidden sm:flex items-center gap-1.5 text-xs font-medium text-dark-400 hover:text-white bg-dark-800 hover:bg-dark-700 border border-dark-700 px-3 py-1.5 rounded-lg transition">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Exportar
+          </button>
+          <button onclick="logout()" class="text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-500/10 border border-rose-500/20 px-3 py-1.5 rounded-lg transition">
+            Salir
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+
+      <!-- Page Title -->
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 class="text-2xl sm:text-3xl font-black text-white tracking-tight">Directorio de Empresas</h1>
+          <p class="text-sm text-dark-500 mt-1">Supervisa y administra todos los negocios registrados en la plataforma.</p>
+        </div>
+      </div>
+
+      <!-- Metrics -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="card p-5">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-semibold text-dark-500 uppercase tracking-wider">Total Negocios</span>
+            <span class="text-lg">🏪</span>
+          </div>
+          <div id="stat-total" class="text-3xl font-black text-white">0</div>
+          <div class="progress-bar mt-2"><div class="progress-fill bg-brand-500" style="width:100%"></div></div>
+        </div>
+        <div class="card p-5">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-semibold text-dark-500 uppercase tracking-wider">Productos Totales</span>
+            <span class="text-lg">📦</span>
+          </div>
+          <div id="stat-products" class="text-3xl font-black text-brand-400">0</div>
+          <div class="progress-bar mt-2"><div id="bar-products" class="progress-fill bg-brand-400" style="width:0%"></div></div>
+        </div>
+        <div class="card p-5">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-semibold text-dark-500 uppercase tracking-wider">Reseñas</span>
+            <span class="text-lg">💬</span>
+          </div>
+          <div id="stat-reviews" class="text-3xl font-black text-amber-400">0</div>
+          <div class="progress-bar mt-2"><div id="bar-reviews" class="progress-fill bg-amber-400" style="width:0%"></div></div>
+        </div>
+        <div class="card p-5">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-semibold text-dark-500 uppercase tracking-wider">Calif. Promedio</span>
+            <span class="text-lg">⭐</span>
+          </div>
+          <div id="stat-avg" class="text-3xl font-black text-emerald-400">0.0</div>
+          <div class="progress-bar mt-2"><div id="bar-avg" class="progress-fill bg-emerald-400" style="width:0%"></div></div>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="card p-4">
+        <div class="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
+          <div class="relative w-full sm:w-80">
+            <svg class="absolute left-3 top-2.5 text-dark-600" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <input type="text" id="search-input" oninput="filterBusinesses()" placeholder="Buscar empresa, slug o email..." 
+                   class="w-full input-dark pl-9 pr-4 py-2 text-sm text-white placeholder-dark-600 focus:outline-none">
+          </div>
+          <div class="flex items-center gap-3 w-full sm:w-auto">
+            <select id="sort-select" onchange="sortBusinesses()" class="input-dark px-3 py-2 text-xs">
+              <option value="newest">Más recientes</option>
+              <option value="name">Nombre A-Z</option>
+              <option value="products">Más productos</option>
+              <option value="rating">Mejor calificación</option>
+            </select>
+            <div class="text-xs text-dark-500 font-medium whitespace-nowrap">
+              Mostrando <span id="visible-count" class="text-white font-bold">0</span> de <span id="total-count" class="text-white font-bold">0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="card overflow-hidden shadow-xl">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-dark-950/60 border-b border-dark-800 text-dark-500 text-[11px] uppercase font-semibold tracking-wider">
+                <th class="py-3.5 px-6">Empresa</th>
+                <th class="py-3.5 px-6">Identificador</th>
+                <th class="py-3.5 px-6">Contacto</th>
+                <th class="py-3.5 px-6 text-center">Productos</th>
+                <th class="py-3.5 px-6 text-center">Reseñas</th>
+                <th class="py-3.5 px-6 text-center">Calif.</th>
+                <th class="py-3.5 px-6 text-right">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="business-table-body" class="divide-y divide-dark-800/50 text-sm">
+              <!-- Dynamic -->
+            </tbody>
+          </table>
+        </div>
+        <div id="table-empty" class="hidden text-center py-12">
+          <div class="text-3xl mb-2">🔍</div>
+          <p class="text-dark-500 text-sm">No se encontraron empresas con esos criterios.</p>
+        </div>
+        <!-- Pagination -->
+        <div class="border-t border-dark-800 px-6 py-3 flex items-center justify-between">
+          <button onclick="changePage(-1)" id="prev-page" class="text-xs text-dark-500 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition">← Anterior</button>
+          <span class="text-xs text-dark-500">Página <span id="page-num" class="text-white font-bold">1</span></span>
+          <button onclick="changePage(1)" id="next-page" class="text-xs text-dark-500 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition">Siguiente →</button>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-dark-800 py-6 text-center text-xs text-dark-600">
+      MenuPro SaaS · Plataforma de Control Multi-tenancy · <span id="footer-year"></span>
+    </footer>
+  </div>
+
+  <!-- Business Detail Modal -->
+  <div id="detail-modal" class="modal-overlay">
+    <div class="bg-dark-900 border border-dark-800 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl relative">
+      <button onclick="closeDetailModal()" class="absolute top-4 right-4 text-dark-500 hover:text-white text-2xl leading-none z-10">×</button>
+      <div class="p-6">
+        <div class="flex items-start gap-4 mb-6">
+          <div class="w-14 h-14 rounded-2xl bg-brand-500/10 border border-brand-500/20 flex items-center justify-center text-2xl flex-shrink-0">🏪</div>
+          <div class="flex-1 min-w-0">
+            <h2 id="detail-name" class="text-xl font-black text-white"></h2>
+            <p id="detail-slug" class="text-xs text-brand-400 font-mono mt-0.5"></p>
+            <p id="detail-desc" class="text-sm text-dark-400 mt-1"></p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3 mb-6">
+          <div class="bg-dark-950/50 rounded-xl p-3 text-center border border-dark-800">
+            <div id="detail-products" class="text-xl font-black text-white">0</div>
+            <div class="text-[10px] text-dark-500 uppercase">Productos</div>
+          </div>
+          <div class="bg-dark-950/50 rounded-xl p-3 text-center border border-dark-800">
+            <div id="detail-reviews" class="text-xl font-black text-amber-400">0</div>
+            <div class="text-[10px] text-dark-500 uppercase">Reseñas</div>
+          </div>
+          <div class="bg-dark-950/50 rounded-xl p-3 text-center border border-dark-800">
+            <div id="detail-rating" class="text-xl font-black text-emerald-400">0.0</div>
+            <div class="text-[10px] text-dark-500 uppercase">Calificación</div>
+          </div>
+        </div>
+
+        <div class="space-y-3 mb-6">
+          <div class="flex items-center gap-3 text-sm">
+            <span class="text-dark-500 w-20 text-xs uppercase font-semibold">Email</span>
+            <span id="detail-email" class="text-dark-200"></span>
+          </div>
+          <div class="flex items-center gap-3 text-sm">
+            <span class="text-dark-500 w-20 text-xs uppercase font-semibold">WhatsApp</span>
+            <span id="detail-phone" class="text-dark-200"></span>
+          </div>
+          <div class="flex items-center gap-3 text-sm">
+            <span class="text-dark-500 w-20 text-xs uppercase font-semibold">Registro</span>
+            <span id="detail-date" class="text-dark-200"></span>
+          </div>
+          <div class="flex items-center gap-3 text-sm">
+            <span class="text-dark-500 w-20 text-xs uppercase font-semibold">Link</span>
+            <a id="detail-link" target="_blank" class="text-brand-400 hover:text-brand-300 underline text-xs truncate"></a>
+          </div>
+        </div>
+
+        <div class="flex gap-3">
+          <a id="detail-view-btn" target="_blank" class="flex-1 btn-primary text-center text-sm py-2.5">Ver Catálogo</a>
+          <button onclick="closeDetailModal()" class="flex-1 btn-ghost text-sm py-2.5">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast">
+    <div class="bg-dark-900 border border-dark-700 rounded-xl px-5 py-3 shadow-2xl flex items-center gap-3">
+      <span id="toast-icon" class="text-xl"></span>
+      <span id="toast-msg" class="text-sm text-white font-medium"></span>
+    </div>
+  </div>
+
+  <script>
+    let allBusinesses = [];
+    let filteredBusinesses = [];
+    let currentPage = 1;
+    const perPage = 10;
+
+    document.getElementById('footer-year').innerText = new Date().getFullYear();
+
+    const adminToken = localStorage.getItem('adminToken');
+    if (adminToken) loadDashboard();
+
+    function showToast(msg, type='info') {
+      const toast = document.getElementById('toast');
+      const icon = document.getElementById('toast-icon');
+      const text = document.getElementById('toast-msg');
+      text.innerText = msg;
+      icon.innerText = type === 'success' ? '✅' : type === 'error' ? '❌' : type === 'warning' ? '⚠️' : 'ℹ️';
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3500);
+    }
+
+    function togglePass() {
+      const input = document.getElementById('admin-pass');
+      const btn = document.getElementById('eye-btn');
+      input.type = input.type === 'password' ? 'text' : 'password';
+      btn.innerText = input.type === 'password' ? '👁' : '🙈';
+    }
+
+    document.getElementById('admin-login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const password = document.getElementById('admin-pass').value;
+      const btnText = document.getElementById('login-text');
+      const spinner = document.getElementById('login-spinner');
+
+      btnText.innerText = 'Verificando...';
+      spinner.classList.remove('hidden');
+
+      try {
+        const res = await fetch('/api/admin/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password })
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+          localStorage.setItem('adminToken', data.token);
+          showToast('Acceso concedido', 'success');
+          loadDashboard();
+        } else {
+          showToast(data.error || 'Acceso denegado', 'error');
+        }
+      } catch (err) {
+        showToast('Error al conectar con el servidor', 'error');
+      } finally {
+        btnText.innerText = 'Acceder al Panel';
+        spinner.classList.add('hidden');
+      }
+    });
+
+    async function loadDashboard() {
+      document.getElementById('login-modal').classList.add('hidden');
+      document.getElementById('dashboard-content').classList.remove('hidden');
+      document.getElementById('last-sync').innerText = 'Sincronizado: ' + new Date().toLocaleTimeString('es-MX', {hour:'2-digit', minute:'2-digit'});
+      await refreshData();
+    }
+
+    async function refreshData() {
+      try {
+        const res = await fetch('/api/admin/businesses');
+        allBusinesses = await res.json();
+        filteredBusinesses = [...allBusinesses];
+
+        // Update stats
+        document.getElementById('stat-total').innerText = allBusinesses.length;
+        const totalProducts = allBusinesses.reduce((sum, b) => sum + (b.productCount || 0), 0);
+        const totalReviews = allBusinesses.reduce((sum, b) => sum + (b.reviewCount || 0), 0);
+        const avgRating = allBusinesses.length > 0 
+          ? (allBusinesses.reduce((sum, b) => sum + (b.avgRating || 0), 0) / allBusinesses.length).toFixed(1) 
+          : '0.0';
+
+        document.getElementById('stat-products').innerText = totalProducts;
+        document.getElementById('stat-reviews').innerText = totalReviews;
+        document.getElementById('stat-avg').innerText = avgRating;
+
+        // Progress bars
+        const maxProducts = Math.max(...allBusinesses.map(b => b.productCount || 0), 1);
+        const maxReviews = Math.max(...allBusinesses.map(b => b.reviewCount || 0), 1);
+        document.getElementById('bar-products').style.width = Math.min((totalProducts / (maxProducts * allBusinesses.length || 1)) * 100, 100) + '%';
+        document.getElementById('bar-reviews').style.width = Math.min((totalReviews / (maxReviews * allBusinesses.length || 1)) * 100, 100) + '%';
+        document.getElementById('bar-avg').style.width = (parseFloat(avgRating) / 5 * 100) + '%';
+
+        document.getElementById('last-sync').innerText = 'Sincronizado: ' + new Date().toLocaleTimeString('es-MX', {hour:'2-digit', minute:'2-digit'});
+
+        currentPage = 1;
+        sortBusinesses();
+      } catch (err) {
+        showToast('Error al cargar empresas', 'error');
+      }
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('business-table-body');
+      const empty = document.getElementById('table-empty');
+      const start = (currentPage - 1) * perPage;
+      const pageData = filteredBusinesses.slice(start, start + perPage);
+
+      document.getElementById('visible-count').innerText = filteredBusinesses.length;
+      document.getElementById('total-count').innerText = allBusinesses.length;
+      document.getElementById('page-num').innerText = currentPage;
+      document.getElementById('prev-page').disabled = currentPage === 1;
+      document.getElementById('next-page').disabled = start + perPage >= filteredBusinesses.length;
+
+      if (filteredBusinesses.length === 0) {
+        tbody.innerHTML = '';
+        empty.classList.remove('hidden');
+        return;
+      }
+
+      empty.classList.add('hidden');
+      tbody.innerHTML = pageData.map((b, i) => `
+        <tr class="table-row fade-in" style="animation-delay:${i * 0.03}s">
+          <td class="py-4 px-6">
+            <div class="font-bold text-white text-sm">${escapeHtml(b.name || 'Sin Nombre')}</div>
+            <div class="text-[11px] text-dark-500 mt-0.5 line-clamp-1">${escapeHtml(b.description || 'Sin descripción')}</div>
+          </td>
+          <td class="py-4 px-6">
+            <span class="inline-flex items-center font-mono text-[11px] text-brand-400 bg-brand-500/8 border border-brand-500/15 px-2 py-0.5 rounded-md">
+              ${escapeHtml(b.slug || '')}
+            </span>
+          </td>
+          <td class="py-4 px-6">
+            <div class="text-xs text-dark-300">${escapeHtml(b.email || 'N/A')}</div>
+            <div class="text-[11px] text-dark-500">${escapeHtml(b.phone || 'N/A')}</div>
+          </td>
+          <td class="py-4 px-6 text-center">
+            <span class="text-xs font-bold text-white bg-dark-800 px-2 py-0.5 rounded-full">${b.productCount || 0}</span>
+          </td>
+          <td class="py-4 px-6 text-center">
+            <span class="text-xs font-bold text-dark-300">${b.reviewCount || 0}</span>
+          </td>
+          <td class="py-4 px-6 text-center">
+            <span class="text-xs font-bold ${(b.avgRating || 0) >= 4 ? 'text-emerald-400' : (b.avgRating || 0) >= 3 ? 'text-amber-400' : 'text-dark-500'}">${(b.avgRating || 0).toFixed(1)}</span>
+          </td>
+          <td class="py-4 px-6 text-right">
+            <div class="flex items-center justify-end gap-1">
+              <button onclick="openDetailModal('${b.slug}')" class="p-1.5 text-dark-500 hover:text-brand-400 hover:bg-brand-500/10 rounded-lg transition" title="Ver detalle">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+              </button>
+              <a href="/catalog.html?slug=${encodeURIComponent(b.slug)}" target="_blank" 
+                 class="p-1.5 text-dark-500 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-lg transition" title="Ver catálogo">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              </a>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function filterBusinesses() {
+      const query = document.getElementById('search-input').value.toLowerCase().trim();
+      if (!query) {
+        filteredBusinesses = [...allBusinesses];
+      } else {
+        filteredBusinesses = allBusinesses.filter(b => 
+          (b.name && b.name.toLowerCase().includes(query)) ||
+          (b.slug && b.slug.toLowerCase().includes(query)) ||
+          (b.email && b.email.toLowerCase().includes(query)) ||
+          (b.phone && b.phone.includes(query))
+        );
+      }
+      currentPage = 1;
+      renderTable();
+    }
+
+    function sortBusinesses() {
+      const sort = document.getElementById('sort-select').value;
+      if (sort === 'name') filteredBusinesses.sort((a,b) => (a.name||'').localeCompare(b.name||''));
+      else if (sort === 'products') filteredBusinesses.sort((a,b) => (b.productCount||0) - (a.productCount||0));
+      else if (sort === 'rating') filteredBusinesses.sort((a,b) => (b.avgRating||0) - (a.avgRating||0));
+      else filteredBusinesses.sort((a,b) => new Date(b.createdAt||0) - new Date(a.createdAt||0));
+      renderTable();
+    }
+
+    function changePage(delta) {
+      currentPage += delta;
+      if (currentPage < 1) currentPage = 1;
+      const maxPage = Math.ceil(filteredBusinesses.length / perPage);
+      if (currentPage > maxPage) currentPage = maxPage;
+      renderTable();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function openDetailModal(slug) {
+      const b = allBusinesses.find(x => x.slug === slug);
+      if (!b) return;
+
+      document.getElementById('detail-name').innerText = b.name || 'Sin nombre';
+      document.getElementById('detail-slug').innerText = '@' + (b.slug || '');
+      document.getElementById('detail-desc').innerText = b.description || 'Sin descripción';
+      document.getElementById('detail-products').innerText = b.productCount || 0;
+      document.getElementById('detail-reviews').innerText = b.reviewCount || 0;
+      document.getElementById('detail-rating').innerText = (b.avgRating || 0).toFixed(1);
+      document.getElementById('detail-email').innerText = b.email || 'N/A';
+      document.getElementById('detail-phone').innerText = b.phone || 'N/A';
+      document.getElementById('detail-date').innerText = b.createdAt ? new Date(b.createdAt).toLocaleDateString('es-MX', {day:'numeric', month:'long', year:'numeric'}) : 'N/A';
+
+      const link = window.location.origin + '/catalog.html?slug=' + encodeURIComponent(b.slug);
+      document.getElementById('detail-link').href = link;
+      document.getElementById('detail-link').innerText = link;
+      document.getElementById('detail-view-btn').href = link;
+
+      document.getElementById('detail-modal').classList.add('active');
+    }
+
+    function closeDetailModal() {
+      document.getElementById('detail-modal').classList.remove('active');
+    }
+
+    function exportData() {
+      const csv = [
+        ['Nombre','Slug','Email','WhatsApp','Productos','Reseñas','Calificación','Registro'].join(','),
+        ...allBusinesses.map(b => [
+          `"${(b.name||'').replace(/"/g,'""')}"`,
+          b.slug,
+          b.email,
+          b.phone,
+          b.productCount||0,
+          b.reviewCount||0,
+          (b.avgRating||0).toFixed(1),
+          b.createdAt ? new Date(b.createdAt).toISOString().split('T')[0] : ''
+        ].join(','))
+      ].join('\n');
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `menupro-empresas-${new Date().toISOString().split('T')[0]}.csv`;
+      link.click();
+      showToast('Datos exportados correctamente', 'success');
+    }
+
+    function logout() {
+      localStorage.removeItem('adminToken');
+      window.location.reload();
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+
+    // Close modals on overlay click
+    document.querySelectorAll('.modal-overlay').forEach(m => {
+      m.addEventListener('click', (e) => { if(e.target === m) m.classList.remove('active'); });
+    });
+  </script>
+</body>
+</html>

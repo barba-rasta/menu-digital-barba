@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Menú Digital</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter','system-ui','sans-serif'] },
+          colors: {
+            brand: { 50:'#eef2ff',100:'#e0e7ff',200:'#c7d2fe',300:'#a5b4fc',400:'#818cf8',500:'#6366f1',600:'#4f46e5',700:'#4338ca' },
+            dark: { 50:'#f8fafc',100:'#f1f5f9',200:'#e2e8f0',300:'#cbd5e1',400:'#94a3b8',500:'#64748b',600:'#475569',700:'#334155',800:'#1e293b',900:'#0f172a',950:'#020617' }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Inter', system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
+    .product-card { transition: all 0.25s cubic-bezier(0.4,0,0.2,1); }
+    .product-card:active { transform: scale(0.98); }
+    .skeleton { background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%); background-size: 200% 100%; animation: skeleton 1.5s infinite; }
+    @keyframes skeleton { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+    .fade-in { animation: fadeIn 0.4s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    .slide-up { animation: slideUp 0.3s ease-out; }
+    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    .cart-badge { position: absolute; top: -4px; right: -4px; background: #ef4444; color: white; font-size: 10px; font-weight: 700; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+    .star-rating { display: inline-flex; gap: 2px; }
+    .star { color: #fbbf24; font-size: 14px; }
+    .star.empty { color: #e2e8f0; }
+    .category-pill { transition: all 0.2s; white-space: nowrap; }
+    .category-pill.active { background: #4f46e5; color: white; border-color: #4f46e5; }
+    .category-pill:not(.active):hover { background: #f1f5f9; }
+    .toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(20px); z-index: 100; opacity: 0; transition: all 0.4s cubic-bezier(0.175,0.885,0.32,1.275); }
+    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+    .scrollbar-hide::-webkit-scrollbar { display: none; }
+    .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 60; display: none; align-items: flex-end; justify-content: center; }
+    .modal-overlay.active { display: flex; }
+    .modal-content { background: white; border-radius: 1.5rem 1.5rem 0 0; width: 100%; max-height: 85vh; overflow-y: auto; animation: slideUp 0.3s ease-out; }
+    .quantity-btn { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 700; transition: all 0.15s; }
+    .quantity-btn:active { transform: scale(0.9); }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen pb-24">
+
+  <!-- Loading State -->
+  <div id="loading-state" class="max-w-lg mx-auto w-full">
+    <div class="bg-brand-600 h-48 skeleton"></div>
+    <div class="px-4 py-6 space-y-4">
+      <div class="h-6 w-3/4 skeleton rounded"></div>
+      <div class="h-4 w-1/2 skeleton rounded"></div>
+      <div class="flex gap-2 mt-4">
+        <div class="h-8 w-20 skeleton rounded-full"></div>
+        <div class="h-8 w-24 skeleton rounded-full"></div>
+        <div class="h-8 w-16 skeleton rounded-full"></div>
+      </div>
+      <div class="space-y-3 mt-4">
+        <div class="h-24 skeleton rounded-xl"></div>
+        <div class="h-24 skeleton rounded-xl"></div>
+        <div class="h-24 skeleton rounded-xl"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content (hidden until loaded) -->
+  <div id="main-content" class="hidden max-w-lg mx-auto w-full bg-white min-h-screen shadow-xl">
+
+    <!-- Header / Cover -->
+    <div class="relative bg-gradient-to-br from-brand-600 via-brand-700 to-purple-700 text-white">
+      <div class="absolute inset-0 bg-black/10"></div>
+      <div class="relative p-6 pb-8">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-1.5 bg-white/15 backdrop-blur-sm px-2.5 py-1 rounded-full">
+            <span class="text-yellow-400 text-sm">★</span>
+            <span id="header-rating" class="text-xs font-bold">0.0</span>
+            <span class="text-white/60 text-[10px]">(<span id="header-reviews">0</span>)</span>
+          </div>
+          <button onclick="shareMenu()" class="bg-white/15 backdrop-blur-sm p-2 rounded-full hover:bg-white/25 transition">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+          </button>
+        </div>
+        <h1 id="biz-title" class="text-2xl font-black mb-1">Cargando...</h1>
+        <p id="biz-desc" class="text-brand-100 text-xs leading-relaxed opacity-90"></p>
+
+        <!-- Action Buttons -->
+        <div class="flex gap-2 mt-4">
+          <a id="map-btn" target="_blank" class="hidden flex-1 bg-white/15 backdrop-blur-sm hover:bg-white/25 text-white text-xs font-semibold py-2.5 rounded-xl flex items-center justify-center gap-1.5 transition">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            Cómo llegar
+          </a>
+          <button onclick="openReviewModal()" class="flex-1 bg-white/15 backdrop-blur-sm hover:bg-white/25 text-white text-xs font-semibold py-2.5 rounded-xl flex items-center justify-center gap-1.5 transition">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            Calificar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Search & Categories -->
+    <div class="sticky top-0 z-30 bg-white border-b border-gray-100">
+      <div class="p-3">
+        <div class="relative">
+          <svg class="absolute left-3 top-2.5 text-gray-400" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input type="text" id="search-input" oninput="filterProducts()" placeholder="Buscar en el menú..." 
+                 class="w-full bg-gray-50 border border-gray-200 rounded-xl pl-9 pr-4 py-2 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/10">
+        </div>
+      </div>
+      <div id="categories-bar" class="flex gap-2 px-3 pb-3 overflow-x-auto scrollbar-hide">
+        <button onclick="filterCategory('all')" class="category-pill active bg-brand-600 text-white text-xs font-semibold px-4 py-1.5 rounded-full border border-brand-600">Todo</button>
+      </div>
+    </div>
+
+    <!-- Products -->
+    <div id="products-container" class="p-3 space-y-3"></div>
+
+    <!-- Reviews Section -->
+    <div class="p-4 border-t border-gray-100">
+      <h3 class="font-bold text-gray-800 text-sm mb-3 flex items-center gap-2">
+        <span>💬</span> Opiniones de clientes
+      </h3>
+      <div id="comments-list" class="space-y-2"></div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="py-6 text-center border-t border-gray-100">
+      <div class="text-[10px] text-gray-400 font-medium uppercase tracking-wider">
+        Menú Digital por <span class="text-brand-600 font-bold">MenuPro</span>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Not Found State -->
+  <div id="not-found" class="hidden min-h-screen flex items-center justify-center p-4">
+    <div class="text-center">
+      <div class="text-6xl mb-4">🔍</div>
+      <h2 class="text-xl font-bold text-gray-800 mb-2">Negocio no encontrado</h2>
+      <p class="text-gray-500 text-sm">El enlace que seguiste no corresponde a ningún menú activo.</p>
+    </div>
+  </div>
+
+  <!-- Floating Cart Button -->
+  <div id="cart-fab" class="fixed bottom-4 left-4 right-4 z-40 hidden">
+    <button onclick="openCartModal()" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-3.5 px-6 rounded-2xl shadow-xl shadow-brand-600/30 flex items-center justify-between transition active:scale-[0.98]">
+      <div class="flex items-center gap-2">
+        <span class="relative">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+          <span id="cart-count" class="cart-badge">0</span>
+        </span>
+        <span class="text-sm">Ver pedido</span>
+      </div>
+      <span id="cart-total" class="text-lg">$0.00</span>
+    </button>
+  </div>
+
+  <!-- Product Detail Modal -->
+  <div id="product-modal" class="modal-overlay">
+    <div class="modal-content p-5">
+      <div class="flex justify-between items-start mb-4">
+        <h3 id="pm-title" class="text-lg font-bold text-gray-800"></h3>
+        <button onclick="closeProductModal()" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">×</button>
+      </div>
+      <div id="pm-image" class="mb-4 rounded-xl overflow-hidden"></div>
+      <p id="pm-desc" class="text-sm text-gray-500 mb-4 leading-relaxed"></p>
+      <div id="pm-video" class="mb-4"></div>
+      <div class="flex items-center justify-between pt-3 border-t border-gray-100">
+        <span id="pm-price" class="text-2xl font-black text-brand-600"></span>
+        <button id="pm-add-btn" class="bg-brand-600 hover:bg-brand-700 text-white font-bold px-6 py-2.5 rounded-xl transition active:scale-95">
+          Agregar al pedido
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cart Modal -->
+  <div id="cart-modal" class="modal-overlay">
+    <div class="modal-content p-5">
+      <div class="flex justify-between items-center mb-5">
+        <h3 class="text-lg font-bold text-gray-800">Tu Pedido</h3>
+        <button onclick="closeCartModal()" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">×</button>
+      </div>
+      <div id="cart-items" class="space-y-3 mb-5 max-h-[50vh] overflow-y-auto scrollbar-hide"></div>
+      <div id="cart-empty" class="hidden text-center py-8">
+        <div class="text-4xl mb-2">🛒</div>
+        <p class="text-gray-500 text-sm">Tu carrito está vacío</p>
+      </div>
+      <div class="border-t border-gray-100 pt-4 space-y-3">
+        <div class="flex justify-between text-sm">
+          <span class="text-gray-500">Subtotal</span>
+          <span id="cart-subtotal" class="font-bold text-gray-800">$0.00</span>
+        </div>
+        <div class="flex justify-between text-lg">
+          <span class="font-bold text-gray-800">Total</span>
+          <span id="cart-grand-total" class="font-black text-brand-600">$0.00</span>
+        </div>
+        <button onclick="sendOrder()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-emerald-500/25 transition active:scale-[0.98] flex items-center justify-center gap-2">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          Enviar pedido por WhatsApp
+        </button>
+        <button onclick="closeCartModal()" class="w-full text-gray-500 text-sm py-2 hover:text-gray-700 transition">Seguir comprando</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Review Modal -->
+  <div id="review-modal" class="modal-overlay">
+    <div class="modal-content p-5">
+      <div class="flex justify-between items-center mb-5">
+        <h3 class="text-lg font-bold text-gray-800">Calificar Negocio</h3>
+        <button onclick="closeReviewModal()" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">×</button>
+      </div>
+      <form id="review-form" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-gray-500 uppercase mb-2">Tu Calificación</label>
+          <div class="flex gap-1" id="star-input">
+            <button type="button" onclick="setRating(1)" class="star-input text-3xl text-gray-300 hover:text-yellow-400 transition">★</button>
+            <button type="button" onclick="setRating(2)" class="star-input text-3xl text-gray-300 hover:text-yellow-400 transition">★</button>
+            <button type="button" onclick="setRating(3)" class="star-input text-3xl text-gray-300 hover:text-yellow-400 transition">★</button>
+            <button type="button" onclick="setRating(4)" class="star-input text-3xl text-gray-300 hover:text-yellow-400 transition">★</button>
+            <button type="button" onclick="setRating(5)" class="star-input text-3xl text-gray-300 hover:text-yellow-400 transition">★</button>
+          </div>
+          <input type="hidden" id="comm-rating" value="5">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-500 uppercase mb-2">Tu Nombre</label>
+          <input type="text" id="comm-author" required placeholder="Ej. Juan Pérez" 
+                 class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-500">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-500 uppercase mb-2">Tu Opinión</label>
+          <textarea id="comm-text" required rows="3" placeholder="¿Qué te pareció el servicio?" 
+                    class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-500 resize-none"></textarea>
+        </div>
+        <button type="submit" id="review-submit-btn" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-3 rounded-xl transition flex items-center justify-center gap-2">
+          <span id="review-btn-text">Publicar Calificación</span>
+          <span id="review-spinner" class="hidden w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast">
+    <div class="bg-gray-900 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3 text-sm font-medium">
+      <span id="toast-icon"></span>
+      <span id="toast-msg"></span>
+    </div>
+  </div>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const slug = urlParams.get('slug');
+    let phone = '';
+    let businessName = '';
+    let allProducts = [];
+    let cart = {};
+    let currentRating = 5;
+
+    function showToast(msg, type='info') {
+      const toast = document.getElementById('toast');
+      const icon = document.getElementById('toast-icon');
+      const text = document.getElementById('toast-msg');
+      text.innerText = msg;
+      icon.innerText = type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️';
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2500);
+    }
+
+    async function init() {
+      if (!slug) return showNotFound();
+
+      try {
+        const res = await fetch(`/api/catalog/${slug}`);
+        if (!res.ok) return showNotFound();
+
+        const data = await res.json();
+        document.getElementById('loading-state').classList.add('hidden');
+        document.getElementById('main-content').classList.remove('hidden');
+
+        businessName = data.business.name;
+        document.getElementById('biz-title').innerText = businessName;
+        document.getElementById('biz-desc').innerText = data.business.description || 'Menú Digital interactivo';
+        document.getElementById('header-rating').innerText = data.avgRating || '0.0';
+        document.getElementById('header-reviews').innerText = data.totalReviews || 0;
+        document.title = businessName + ' | Menú Digital';
+        phone = data.business.phone;
+
+        if (data.business.mapUrl) {
+          const mapBtn = document.getElementById('map-btn');
+          mapBtn.href = data.business.mapUrl;
+          mapBtn.classList.remove('hidden');
+        }
+
+        // Categories
+        const categories = [...new Set((data.products || []).map(p => p.category).filter(Boolean))];
+        const catBar = document.getElementById('categories-bar');
+        categories.forEach(cat => {
+          const btn = document.createElement('button');
+          btn.className = 'category-pill bg-gray-100 text-gray-600 text-xs font-semibold px-4 py-1.5 rounded-full border border-gray-200';
+          btn.innerText = cat;
+          btn.onclick = () => filterCategory(cat, btn);
+          catBar.appendChild(btn);
+        });
+
+        allProducts = data.products || [];
+        renderProducts(allProducts);
+
+        // Comments
+        const commList = document.getElementById('comments-list');
+        if (data.comments && data.comments.length > 0) {
+          commList.innerHTML = data.comments.slice(0, 5).map(c => `
+            <div class="bg-gray-50 p-3 rounded-xl border border-gray-100">
+              <div class="flex items-center justify-between mb-1">
+                <span class="font-bold text-gray-800 text-xs">${escapeHtml(c.author)}</span>
+                <div class="star-rating">${'★'.repeat(c.rating||5)}${'☆'.repeat(5-(c.rating||5))}</div>
+              </div>
+              <p class="text-gray-500 text-xs leading-relaxed">${escapeHtml(c.text)}</p>
+            </div>
+          `).join('');
+        } else {
+          commList.innerHTML = '<p class="text-gray-400 text-xs text-center py-4">Sé el primero en calificar este negocio</p>';
+        }
+      } catch(err) {
+        showNotFound();
+      }
+    }
+
+    function showNotFound() {
+      document.getElementById('loading-state').classList.add('hidden');
+      document.getElementById('not-found').classList.remove('hidden');
+    }
+
+    function renderProducts(list) {
+      const container = document.getElementById('products-container');
+      if (list.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-12">
+            <div class="text-4xl mb-3">🔍</div>
+            <p class="text-gray-400 text-sm">No se encontraron productos</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = list.map(p => `
+        <div class="product-card bg-white border border-gray-100 rounded-2xl p-3 shadow-sm flex gap-3 cursor-pointer" onclick="openProductModal('${p._id || p.id}')">
+          ${p.image 
+            ? `<img src="${p.image}" class="w-20 h-20 object-cover rounded-xl flex-shrink-0">`
+            : `<div class="w-20 h-20 bg-gray-100 rounded-xl flex items-center justify-center text-2xl flex-shrink-0">🍽️</div>`
+          }
+          <div class="flex-1 min-w-0 flex flex-col justify-between py-0.5">
+            <div>
+              <h4 class="font-bold text-gray-800 text-sm leading-tight">${escapeHtml(p.name)}</h4>
+              <p class="text-xs text-gray-400 mt-0.5 line-clamp-2">${escapeHtml(p.description || '')}</p>
+            </div>
+            <div class="flex items-center justify-between mt-1.5">
+              <span class="text-brand-600 font-black text-base">$${parseFloat(p.price).toFixed(2)}</span>
+              <button onclick="event.stopPropagation(); addToCart('${p._id || p.id}', '${escapeHtml(p.name).replace(/'/g, "\'")}', ${p.price})" 
+                      class="bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition active:scale-90">
+                + Agregar
+              </button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function filterProducts() {
+      const query = document.getElementById('search-input').value.toLowerCase();
+      const filtered = allProducts.filter(p => (p.name || '').toLowerCase().includes(query) || (p.description || '').toLowerCase().includes(query));
+      renderProducts(filtered);
+    }
+
+    function filterCategory(cat, btn) {
+      document.querySelectorAll('.category-pill').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      else document.querySelector('.category-pill').classList.add('active');
+
+      if (cat === 'all') renderProducts(allProducts);
+      else renderProducts(allProducts.filter(p => p.category === cat));
+    }
+
+    // Cart
+    function addToCart(id, name, price) {
+      if (!cart[id]) cart[id] = { name, price, qty: 0 };
+      cart[id].qty++;
+      updateCartUI();
+      showToast(`${name} agregado`, 'success');
+    }
+
+    function removeFromCart(id) {
+      delete cart[id];
+      updateCartUI();
+      renderCartItems();
+    }
+
+    function changeQty(id, delta) {
+      if (!cart[id]) return;
+      cart[id].qty += delta;
+      if (cart[id].qty <= 0) delete cart[id];
+      updateCartUI();
+      renderCartItems();
+    }
+
+    function updateCartUI() {
+      const items = Object.values(cart);
+      const count = items.reduce((sum, i) => sum + i.qty, 0);
+      const total = items.reduce((sum, i) => sum + (i.price * i.qty), 0);
+
+      document.getElementById('cart-count').innerText = count;
+      document.getElementById('cart-total').innerText = '$' + total.toFixed(2);
+      document.getElementById('cart-fab').classList.toggle('hidden', count === 0);
+    }
+
+    function renderCartItems() {
+      const container = document.getElementById('cart-items');
+      const empty = document.getElementById('cart-empty');
+      const items = Object.entries(cart);
+
+      if (items.length === 0) {
+        container.innerHTML = '';
+        empty.classList.remove('hidden');
+        document.getElementById('cart-subtotal').innerText = '$0.00';
+        document.getElementById('cart-grand-total').innerText = '$0.00';
+        return;
+      }
+
+      empty.classList.add('hidden');
+      let subtotal = 0;
+
+      container.innerHTML = items.map(([id, item]) => {
+        subtotal += item.price * item.qty;
+        return `
+          <div class="flex items-center gap-3 bg-gray-50 rounded-xl p-3">
+            <div class="flex-1 min-w-0">
+              <h4 class="font-semibold text-gray-800 text-sm truncate">${escapeHtml(item.name)}</h4>
+              <p class="text-brand-600 font-bold text-xs">$${(item.price * item.qty).toFixed(2)}</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="changeQty('${id}', -1)" class="quantity-btn bg-gray-200 text-gray-600 hover:bg-gray-300">−</button>
+              <span class="text-sm font-bold text-gray-800 w-6 text-center">${item.qty}</span>
+              <button onclick="changeQty('${id}', 1)" class="quantity-btn bg-brand-100 text-brand-600 hover:bg-brand-200">+</button>
+            </div>
+            <button onclick="removeFromCart('${id}')" class="text-gray-400 hover:text-rose-500 p-1">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            </button>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('cart-subtotal').innerText = '$' + subtotal.toFixed(2);
+      document.getElementById('cart-grand-total').innerText = '$' + subtotal.toFixed(2);
+    }
+
+    function sendOrder() {
+      const items = Object.entries(cart);
+      if (items.length === 0) return;
+
+      let msg = `*Hola ${businessName}* 👋
+
+*Quiero hacer un pedido:*
+
+`;
+      let total = 0;
+      items.forEach(([id, item]) => {
+        msg += `• ${item.qty}x ${item.name} — $${(item.price * item.qty).toFixed(2)}
+`;
+        total += item.price * item.qty;
+      });
+      msg += `
+*Total: $${total.toFixed(2)}*
+
+Gracias!`;
+
+      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+      closeCartModal();
+    }
+
+    // Product Modal
+    function openProductModal(id) {
+      const p = allProducts.find(x => (x._id || x.id) === id);
+      if (!p) return;
+      document.getElementById('pm-title').innerText = p.name;
+      document.getElementById('pm-desc').innerText = p.description || 'Sin descripción';
+      document.getElementById('pm-price').innerText = '$' + parseFloat(p.price).toFixed(2);
+      document.getElementById('pm-image').innerHTML = p.image ? `<img src="${p.image}" class="w-full h-48 object-cover">` : '';
+      document.getElementById('pm-video').innerHTML = p.videoUrl ? `<a href="${p.videoUrl}" target="_blank" class="text-xs text-rose-500 font-semibold flex items-center gap-1"><span>▶</span> Ver Video</a>` : '';
+      document.getElementById('pm-add-btn').onclick = () => { addToCart(id, p.name, p.price); closeProductModal(); };
+      document.getElementById('product-modal').classList.add('active');
+    }
+    function closeProductModal() { document.getElementById('product-modal').classList.remove('active'); }
+
+    // Cart Modal
+    function openCartModal() { renderCartItems(); document.getElementById('cart-modal').classList.add('active'); }
+    function closeCartModal() { document.getElementById('cart-modal').classList.remove('active'); }
+
+    // Review Modal
+    function openReviewModal() { document.getElementById('review-modal').classList.add('active'); }
+    function closeReviewModal() { document.getElementById('review-modal').classList.remove('active'); }
+
+    function setRating(n) {
+      currentRating = n;
+      document.getElementById('comm-rating').value = n;
+      document.querySelectorAll('.star-input').forEach((btn, i) => {
+        btn.style.color = i < n ? '#fbbf24' : '#e2e8f0';
+      });
+    }
+
+    document.getElementById('review-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const author = document.getElementById('comm-author').value;
+      const text = document.getElementById('comm-text').value;
+      const rating = document.getElementById('comm-rating').value;
+
+      const btnText = document.getElementById('review-btn-text');
+      const spinner = document.getElementById('review-spinner');
+      btnText.innerText = 'Enviando...';
+      spinner.classList.remove('hidden');
+
+      try {
+        await fetch('/api/comments', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ businessSlug: slug, author, text, rating })
+        });
+        showToast('¡Gracias por tu opinión!', 'success');
+        document.getElementById('review-form').reset();
+        setRating(5);
+        closeReviewModal();
+        init();
+      } catch(err) {
+        showToast('Error al enviar', 'error');
+      } finally {
+        btnText.innerText = 'Publicar Calificación';
+        spinner.classList.add('hidden');
+      }
+    });
+
+    function shareMenu() {
+      const url = window.location.href;
+      if (navigator.share) {
+        navigator.share({ title: businessName + ' | Menú Digital', url });
+      } else {
+        navigator.clipboard.writeText(url);
+        showToast('Link copiado al portapapeles', 'success');
+      }
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+
+    // Close modals on overlay click
+    document.querySelectorAll('.modal-overlay').forEach(m => {
+      m.addEventListener('click', (e) => { if(e.target === m) m.classList.remove('active'); });
+    });
+
+    init();
+  </script>
+</body>
+</html>

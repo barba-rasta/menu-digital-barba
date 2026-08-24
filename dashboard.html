@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel de Control | MenuPro</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter','system-ui','sans-serif'] },
+          colors: {
+            brand: { 50:'#eef2ff',100:'#e0e7ff',200:'#c7d2fe',300:'#a5b4fc',400:'#818cf8',500:'#6366f1',600:'#4f46e5',700:'#4338ca',800:'#3730a3',900:'#312e81' },
+            dark: { 50:'#f8fafc',100:'#f1f5f9',200:'#e2e8f0',300:'#cbd5e1',400:'#94a3b8',500:'#64748b',600:'#475569',700:'#334155',800:'#1e293b',900:'#0f172a',950:'#020617' }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Inter', system-ui, sans-serif; }
+    .card { background: rgba(30,41,59,0.6); border: 1px solid rgba(51,65,85,0.5); border-radius: 1rem; }
+    .card-hover { transition: all 0.25s cubic-bezier(0.4,0,0.2,1); }
+    .card-hover:hover { border-color: rgba(99,102,241,0.3); box-shadow: 0 8px 30px -8px rgba(99,102,241,0.15); }
+    .input-dark { background: #0f172a; border: 1px solid #334155; border-radius: 0.75rem; color: white; transition: all 0.2s; }
+    .input-dark:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.15); outline: none; }
+    .input-dark::placeholder { color: #475569; }
+    .btn-primary { background: #4f46e5; color: white; font-weight: 600; border-radius: 0.75rem; transition: all 0.2s; }
+    .btn-primary:hover { background: #6366f1; box-shadow: 0 4px 20px -4px rgba(99,102,241,0.4); }
+    .btn-danger { background: #dc2626; color: white; font-weight: 600; border-radius: 0.75rem; transition: all 0.2s; }
+    .btn-danger:hover { background: #ef4444; }
+    .btn-ghost { background: transparent; border: 1px solid #334155; color: #94a3b8; font-weight: 500; border-radius: 0.75rem; transition: all 0.2s; }
+    .btn-ghost:hover { background: #1e293b; color: white; border-color: #475569; }
+    .toggle { appearance: none; width: 44px; height: 24px; background: #334155; border-radius: 12px; position: relative; cursor: pointer; transition: all 0.3s; }
+    .toggle::after { content: ''; position: absolute; width: 18px; height: 18px; background: white; border-radius: 50%; top: 3px; left: 3px; transition: all 0.3s; }
+    .toggle:checked { background: #4f46e5; }
+    .toggle:checked::after { left: 23px; }
+    .toast { position: fixed; bottom: 24px; right: 24px; z-index: 100; transform: translateY(100px); opacity: 0; transition: all 0.4s cubic-bezier(0.175,0.885,0.32,1.275); }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(2,6,23,0.85); backdrop-filter: blur(8px); z-index: 50; display: none; align-items: center; justify-content: center; padding: 1rem; }
+    .modal-overlay.active { display: flex; }
+    .skeleton { background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%); background-size: 200% 100%; animation: skeleton 1.5s infinite; }
+    @keyframes skeleton { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+    .stat-card { background: linear-gradient(135deg, rgba(99,102,241,0.08), rgba(168,85,247,0.04)); }
+    .scrollbar-hide::-webkit-scrollbar { display: none; }
+    .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+    .fade-in { animation: fadeIn 0.4s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body class="bg-dark-950 text-dark-100 min-h-screen font-sans antialiased">
+
+  <!-- Navbar -->
+  <nav class="sticky top-0 z-40 border-b border-dark-800 bg-dark-950/80 backdrop-blur-xl">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm">M</div>
+          <div>
+            <span class="font-bold text-white text-sm">MenuPro</span>
+            <span class="text-dark-500 text-xs ml-2" id="nav-slug"></span>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <a id="preview-link" target="_blank" class="hidden sm:flex items-center gap-1.5 text-xs font-medium text-brand-400 hover:text-brand-300 bg-brand-500/10 border border-brand-500/20 px-3 py-1.5 rounded-lg transition">
+            <span>👁</span> Ver Menú Público
+          </a>
+          <button onclick="openProfileModal()" class="text-xs font-medium text-dark-400 hover:text-white bg-dark-800 hover:bg-dark-700 border border-dark-700 px-3 py-1.5 rounded-lg transition">
+            ⚙️ Perfil
+          </button>
+          <button onclick="logout()" class="text-xs font-medium text-rose-400 hover:text-rose-300 bg-rose-500/10 border border-rose-500/20 px-3 py-1.5 rounded-lg transition">
+            Salir
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+      <div>
+        <h1 class="text-2xl sm:text-3xl font-black text-white tracking-tight" id="welcome-title">Panel de Control</h1>
+        <p class="text-dark-500 text-sm mt-1">Gestiona tu menú digital, productos y configuración.</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="inline-flex items-center gap-1.5 text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-full">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Activo
+        </span>
+        <span id="plan-badge" class="text-xs font-semibold text-brand-400 bg-brand-500/10 border border-brand-500/20 px-3 py-1.5 rounded-full">Gratis</span>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="card stat-card p-5">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-xs font-semibold text-dark-400 uppercase tracking-wider">Productos</span>
+          <span class="text-lg">📦</span>
+        </div>
+        <div id="stat-products" class="text-3xl font-black text-white">0</div>
+        <div class="text-xs text-dark-500 mt-1">En tu catálogo</div>
+      </div>
+      <div class="card stat-card p-5">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-xs font-semibold text-dark-400 uppercase tracking-wider">Visitas</span>
+          <span class="text-lg">👁</span>
+        </div>
+        <div id="stat-visits" class="text-3xl font-black text-brand-400">0</div>
+        <div class="text-xs text-dark-500 mt-1">Este mes</div>
+      </div>
+      <div class="card stat-card p-5">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-xs font-semibold text-dark-400 uppercase tracking-wider">Calificación</span>
+          <span class="text-lg">⭐</span>
+        </div>
+        <div id="stat-rating" class="text-3xl font-black text-amber-400">0.0</div>
+        <div class="text-xs text-dark-500 mt-1" id="stat-reviews">0 reseñas</div>
+      </div>
+      <div class="card stat-card p-5">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-xs font-semibold text-dark-400 uppercase tracking-wider">Pedidos</span>
+          <span class="text-lg">🛒</span>
+        </div>
+        <div id="stat-orders" class="text-3xl font-black text-emerald-400">0</div>
+        <div class="text-xs text-dark-500 mt-1">Vía WhatsApp</div>
+      </div>
+    </div>
+
+    <!-- QR Code & Quick Actions -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- QR -->
+      <div class="card p-6 lg:col-span-1">
+        <h3 class="font-bold text-white mb-4 flex items-center gap-2">
+          <span>📱</span> Tu Código QR
+        </h3>
+        <div class="flex flex-col items-center">
+          <div id="qr-box" class="bg-white p-3 rounded-xl shadow-lg mb-4">
+            <div class="w-40 h-40 skeleton rounded-lg"></div>
+          </div>
+          <div class="flex gap-2 w-full">
+            <a id="download-qr" download="menu-qr.png" class="flex-1 btn-primary text-center text-sm py-2.5">Descargar QR</a>
+            <button onclick="copyMenuLink()" class="flex-1 btn-ghost text-sm py-2.5">Copiar Link</button>
+          </div>
+          <p class="text-[10px] text-dark-500 mt-3 text-center">Imprime este QR y colócalo en tus mesas o mostrador.</p>
+        </div>
+      </div>
+
+      <!-- Quick Actions & Map -->
+      <div class="lg:col-span-2 space-y-6">
+        <!-- Location -->
+        <div class="card p-6">
+          <h3 class="font-bold text-white mb-4 flex items-center gap-2">
+            <span>📍</span> Ubicación en Google Maps
+          </h3>
+          <form id="map-form" class="flex gap-3">
+            <div class="flex-1 relative">
+              <input type="url" id="biz-map-url" placeholder="https://maps.app.goo.gl/..." 
+                     class="w-full input-dark px-4 py-2.5 text-sm">
+            </div>
+            <button type="submit" class="btn-primary px-5 py-2.5 text-sm whitespace-nowrap">Guardar</button>
+          </form>
+          <p class="text-[11px] text-dark-500 mt-2">Abre Google Maps, busca tu local, presiona <b>Compartir</b> y pega el enlace aquí.</p>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card p-6">
+          <h3 class="font-bold text-white mb-4">Acciones Rápidas</h3>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <button onclick="document.getElementById('prod-name').focus(); window.scrollTo({top:document.getElementById('products-section').offsetTop-80, behavior:'smooth'})" 
+                    class="flex flex-col items-center gap-2 p-4 rounded-xl bg-dark-900/50 border border-dark-800 hover:border-brand-500/30 hover:bg-dark-800/50 transition group">
+              <span class="text-2xl group-hover:scale-110 transition">➕</span>
+              <span class="text-xs font-semibold text-dark-300">Agregar Producto</span>
+            </button>
+            <button onclick="openProfileModal()" 
+                    class="flex flex-col items-center gap-2 p-4 rounded-xl bg-dark-900/50 border border-dark-800 hover:border-brand-500/30 hover:bg-dark-800/50 transition group">
+              <span class="text-2xl group-hover:scale-110 transition">🏪</span>
+              <span class="text-xs font-semibold text-dark-300">Editar Perfil</span>
+            </button>
+            <button onclick="copyMenuLink()" 
+                    class="flex flex-col items-center gap-2 p-4 rounded-xl bg-dark-900/50 border border-dark-800 hover:border-brand-500/30 hover:bg-dark-800/50 transition group">
+              <span class="text-2xl group-hover:scale-110 transition">🔗</span>
+              <span class="text-xs font-semibold text-dark-300">Copiar Link</span>
+            </button>
+            <a id="preview-link-btn" target="_blank" 
+               class="flex flex-col items-center gap-2 p-4 rounded-xl bg-dark-900/50 border border-dark-800 hover:border-brand-500/30 hover:bg-dark-800/50 transition group cursor-pointer">
+              <span class="text-2xl group-hover:scale-110 transition">🌐</span>
+              <span class="text-xs font-semibold text-dark-300">Ver Público</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add Product -->
+    <div id="products-section" class="card p-6">
+      <h3 class="font-bold text-white mb-5 flex items-center gap-2">
+        <span>➕</span> Agregar Nuevo Producto
+      </h3>
+      <form id="prod-form" class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="md:col-span-2">
+            <label class="block text-xs font-semibold text-dark-400 uppercase tracking-wider mb-2">Nombre del Producto</label>
+            <input type="text" id="prod-name" required placeholder="Ej. Taco de Pastor" 
+                   class="w-full input-dark px-4 py-2.5 text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-dark-400 uppercase tracking-wider mb-2">Precio ($)</label>
+            <input type="number" step="0.01" id="prod-price" required placeholder="25.00" 
+                   class="w-full input-dark px-4 py-2.5 text-sm">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-dark-400 uppercase tracking-wider mb-2">Descripción / Ingredientes</label>
+          <textarea id="prod-desc" rows="2" placeholder="Carne al pastor, piña, cebolla, cilantro..." 
+                    class="w-full input-dark px-4 py-2.5 text-sm resize-none"></textarea>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-dark-400 uppercase tracking-wider mb-2">Foto del Producto</label>
+            <div class="relative">
+              <input type="file" id="prod-img" accept="image/*" 
+                     class="w-full input-dark px-4 py-2.5 text-sm file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-brand-600 file:text-white hover:file:bg-brand-500 cursor-pointer">
+            </div>
+            <div id="img-preview" class="mt-2 hidden">
+              <img id="img-preview-src" class="w-20 h-20 object-cover rounded-lg border border-dark-700">
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-dark-400 uppercase tracking-wider mb-2">URL de Video (Opcional)</label>
+            <input type="url" id="prod-video" placeholder="https://youtube.com/watch?v=..." 
+                   class="w-full input-dark px-4 py-2.5 text-sm">
+          </div>
+        </div>
+        <div class="flex items-center gap-4 pt-2">
+          <button type="submit" id="prod-submit-btn" class="btn-primary px-6 py-2.5 text-sm flex items-center gap-2">
+            <span id="prod-btn-text">Guardar Producto</span>
+            <span id="prod-spinner" class="hidden w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+          </button>
+          <button type="button" onclick="document.getElementById('prod-form').reset(); document.getElementById('img-preview').classList.add('hidden');" 
+                  class="btn-ghost px-4 py-2.5 text-sm">Limpiar</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Products List -->
+    <div class="card p-6">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
+        <h3 class="font-bold text-white flex items-center gap-2">
+          <span>🍽️</span> Productos Activos
+          <span id="product-count" class="text-xs font-normal text-dark-500 bg-dark-800 px-2 py-0.5 rounded-full">0</span>
+        </h3>
+        <div class="flex items-center gap-2">
+          <input type="text" id="prod-search" onkeyup="filterProducts()" placeholder="Buscar producto..." 
+                 class="input-dark px-3 py-1.5 text-xs w-48">
+          <select id="prod-sort" onchange="sortProducts()" class="input-dark px-3 py-1.5 text-xs">
+            <option value="newest">Más recientes</option>
+            <option value="price-asc">Precio ↑</option>
+            <option value="price-desc">Precio ↓</option>
+            <option value="name">Nombre A-Z</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="prod-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Dynamic -->
+      </div>
+
+      <div id="prod-empty" class="hidden text-center py-12">
+        <div class="text-4xl mb-3">📭</div>
+        <p class="text-dark-500 text-sm">Aún no tienes productos. ¡Agrega el primero arriba!</p>
+      </div>
+    </div>
+
+    <!-- Reviews Section -->
+    <div class="card p-6">
+      <h3 class="font-bold text-white mb-5 flex items-center gap-2">
+        <span>💬</span> Reseñas de Clientes
+      </h3>
+      <div id="reviews-list" class="space-y-3 max-h-80 overflow-y-auto scrollbar-hide">
+        <!-- Dynamic -->
+      </div>
+      <div id="reviews-empty" class="hidden text-center py-8">
+        <div class="text-3xl mb-2">⭐</div>
+        <p class="text-dark-500 text-sm">Aún no hay reseñas. Tus clientes podrán calificar tu negocio desde el menú público.</p>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-dark-800 py-6 mt-8">
+    <div class="max-w-7xl mx-auto px-4 text-center text-xs text-dark-600">
+      MenuPro · Plataforma de Menús Digitales Profesionales
+    </div>
+  </footer>
+
+  <!-- Edit Product Modal -->
+  <div id="edit-modal" class="modal-overlay">
+    <div class="bg-dark-900 border border-dark-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+      <button onclick="closeEditModal()" class="absolute top-4 right-4 text-dark-500 hover:text-white text-2xl leading-none">×</button>
+      <h3 class="text-lg font-bold text-white mb-5">Editar Producto</h3>
+      <form id="edit-form" class="space-y-4">
+        <input type="hidden" id="edit-id">
+        <div>
+          <label class="block text-xs font-semibold text-dark-400 uppercase tracking-wider mb-2">Nombre</label>
+          <input type="text" id="edit-name" required class="w-full input-dark px-4 py-2.5 text-sm">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-dark-400 uppercase tracking-wider mb-2">Precio</label>
+            <input type="number" step="0.01" id="edit-price" required class="w-full input-dark px-4 py-2.5 text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-dark-400 uppercase tracking-wider mb-2">Disponible</label>
+            <div class="flex items-center gap-3 h-10">
+              <input type="checkbox" id="edit-available" class="toggle">
+              <span id="edit-avail-text" class="text-sm text-dark-400">Sí</span>
+            </div>
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-dark-400 uppercase tracking-wider mb-2">Descripción</label>
+          <textarea id="edit-desc" rows="2" class="w-full input-dark px-4 py-2.5 text-sm resize-none"></textarea>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-dark-400 uppercase tracking-wider mb-2">URL de Video</label>
+          <input type="url" id="edit-video" class="w-full input-dark px-4 py-2.5 text-sm">
+        </div>
+        <div class="flex items-center gap-3 pt-2">
+          <button type="submit" class="btn-primary px-5 py-2.5 text-sm">Guardar Cambios</button>
+          <button type="button" onclick="closeEditModal()" class="btn-ghost px-4 py-2.5 text-sm">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Profile Modal -->
+  <div id="profile-modal" class="modal-overlay">
+    <div class="bg-dark-900 border border-dark-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative">
+      <button onclick="closeProfileModal()" class="absolute top-4 right-4 text-dark-500 hover:text-white text-2xl leading-none">×</button>
+      <h3 class="text-lg font-bold text-white mb-5">Editar Perfil del Negocio</h3>
+      <form id="profile-form" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-dark-400 uppercase tracking-wider mb-2">Nombre del Negocio</label>
+          <input type="text" id="profile-name" required class="w-full input-dark px-4 py-2.5 text-sm">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-dark-400 uppercase tracking-wider mb-2">Descripción</label>
+          <textarea id="profile-desc" rows="2" class="w-full input-dark px-4 py-2.5 text-sm resize-none"></textarea>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-dark-400 uppercase tracking-wider mb-2">Email</label>
+            <input type="email" id="profile-email" required class="w-full input-dark px-4 py-2.5 text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-dark-400 uppercase tracking-wider mb-2">WhatsApp</label>
+            <input type="text" id="profile-phone" required class="w-full input-dark px-4 py-2.5 text-sm">
+          </div>
+        </div>
+        <div class="flex items-center gap-3 pt-2">
+          <button type="submit" class="btn-primary px-5 py-2.5 text-sm">Guardar Perfil</button>
+          <button type="button" onclick="closeProfileModal()" class="btn-ghost px-4 py-2.5 text-sm">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Delete Confirm Modal -->
+  <div id="delete-modal" class="modal-overlay">
+    <div class="bg-dark-900 border border-dark-800 rounded-2xl max-w-sm w-full p-6 shadow-2xl text-center">
+      <div class="text-4xl mb-3">🗑️</div>
+      <h3 class="text-lg font-bold text-white mb-2">¿Eliminar producto?</h3>
+      <p class="text-dark-400 text-sm mb-5">Esta acción no se puede deshacer. El producto se eliminará permanentemente.</p>
+      <div class="flex gap-3 justify-center">
+        <button onclick="confirmDelete()" class="btn-danger px-5 py-2 text-sm">Eliminar</button>
+        <button onclick="closeDeleteModal()" class="btn-ghost px-5 py-2 text-sm">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast">
+    <div class="bg-dark-900 border border-dark-700 rounded-xl px-5 py-3 shadow-2xl flex items-center gap-3">
+      <span id="toast-icon" class="text-xl"></span>
+      <span id="toast-msg" class="text-sm text-white font-medium"></span>
+    </div>
+  </div>
+
+  <script>
+    const token = localStorage.getItem('token');
+    const slug = localStorage.getItem('slug');
+    if (!token || !slug) window.location.href = '/index.html';
+
+    let allProducts = [];
+    let deleteTargetId = null;
+    let businessData = null;
+
+    document.getElementById('nav-slug').innerText = '@' + slug;
+    const publicUrl = window.location.origin + '/catalog.html?slug=' + slug;
+    document.getElementById('preview-link').href = publicUrl;
+    document.getElementById('preview-link-btn').href = publicUrl;
+
+    function showToast(msg, type='info') {
+      const toast = document.getElementById('toast');
+      const icon = document.getElementById('toast-icon');
+      const text = document.getElementById('toast-msg');
+      text.innerText = msg;
+      icon.innerText = type === 'success' ? '✅' : type === 'error' ? '❌' : type === 'warning' ? '⚠️' : 'ℹ️';
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3500);
+    }
+
+    function logout() {
+      localStorage.clear();
+      window.location.href = '/index.html';
+    }
+
+    function copyMenuLink() {
+      navigator.clipboard.writeText(publicUrl).then(() => showToast('Link copiado al portapapeles', 'success'));
+    }
+
+    // Load Business Info
+    async function loadBizInfo() {
+      try {
+        const res = await fetch(`/api/catalog/${slug}`);
+        const data = await res.json();
+        businessData = data;
+
+        if (data.business) {
+          document.getElementById('welcome-title').innerText = data.business.name || 'Panel de Control';
+          document.getElementById('biz-map-url').value = data.business.mapUrl || '';
+          document.getElementById('stat-visits').innerText = data.business.visits || 0;
+          document.getElementById('stat-orders').innerText = data.business.orders || 0;
+
+          // Profile form
+          document.getElementById('profile-name').value = data.business.name || '';
+          document.getElementById('profile-desc').value = data.business.description || '';
+          document.getElementById('profile-email').value = data.business.email || '';
+          document.getElementById('profile-phone').value = data.business.phone || '';
+        }
+
+        // Stats
+        document.getElementById('stat-products').innerText = data.products ? data.products.length : 0;
+        document.getElementById('stat-rating').innerText = data.avgRating || '0.0';
+        document.getElementById('stat-reviews').innerText = (data.totalReviews || 0) + ' reseñas';
+
+        // Products
+        allProducts = data.products || [];
+        renderProducts(allProducts);
+
+        // Reviews
+        renderReviews(data.comments || []);
+      } catch(err) {
+        showToast('Error al cargar datos', 'error');
+      }
+    }
+
+    // Load QR
+    async function loadQR() {
+      try {
+        const res = await fetch(`/api/qr/${slug}`);
+        const data = await res.json();
+        document.getElementById('qr-box').innerHTML = `<img src="${data.qr}" class="w-40 h-40 object-contain">`;
+        document.getElementById('download-qr').href = data.qr;
+      } catch(err) {
+        document.getElementById('qr-box').innerHTML = '<div class="w-40 h-40 flex items-center justify-center text-dark-600 text-xs">QR no disponible</div>';
+      }
+    }
+
+    // Render Products
+    function renderProducts(list) {
+      const container = document.getElementById('prod-list');
+      const empty = document.getElementById('prod-empty');
+      const count = document.getElementById('product-count');
+
+      count.innerText = list.length;
+
+      if (list.length === 0) {
+        container.innerHTML = '';
+        empty.classList.remove('hidden');
+        return;
+      }
+
+      empty.classList.add('hidden');
+      container.innerHTML = list.map(p => `
+        <div class="bg-dark-900/50 border border-dark-800 rounded-xl p-4 card-hover fade-in group relative">
+          <div class="flex gap-3">
+            ${p.image 
+              ? `<img src="${p.image}" class="w-16 h-16 object-cover rounded-lg flex-shrink-0">` 
+              : `<div class="w-16 h-16 bg-dark-800 rounded-lg flex items-center justify-center text-xl flex-shrink-0">🍽️</div>`
+            }
+            <div class="flex-1 min-w-0">
+              <div class="flex items-start justify-between gap-2">
+                <h4 class="font-bold text-white text-sm truncate">${escapeHtml(p.name)}</h4>
+                <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
+                  <button onclick="openEditModal('${p._id || p.id}')" class="text-dark-500 hover:text-brand-400 p-1" title="Editar">✏️</button>
+                  <button onclick="openDeleteModal('${p._id || p.id}')" class="text-dark-500 hover:text-rose-400 p-1" title="Eliminar">🗑️</button>
+                </div>
+              </div>
+              <p class="text-xs text-dark-500 line-clamp-2 mt-0.5">${escapeHtml(p.description || '')}</p>
+              <div class="flex items-center justify-between mt-2">
+                <span class="text-brand-400 font-bold text-sm">$${parseFloat(p.price).toFixed(2)}</span>
+                <div class="flex items-center gap-2">
+                  ${p.videoUrl ? `<span class="text-[10px] text-rose-400 bg-rose-500/10 px-1.5 py-0.5 rounded">🎬 Video</span>` : ''}
+                  <span class="text-[10px] ${p.available !== false ? 'text-emerald-400 bg-emerald-500/10' : 'text-dark-500 bg-dark-800'} px-1.5 py-0.5 rounded">
+                    ${p.available !== false ? '✓ Disponible' : '✗ Agotado'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function filterProducts() {
+      const query = document.getElementById('prod-search').value.toLowerCase();
+      const filtered = allProducts.filter(p => (p.name || '').toLowerCase().includes(query));
+      renderProducts(filtered);
+    }
+
+    function sortProducts() {
+      const sort = document.getElementById('prod-sort').value;
+      let sorted = [...allProducts];
+      if (sort === 'price-asc') sorted.sort((a,b) => parseFloat(a.price) - parseFloat(b.price));
+      else if (sort === 'price-desc') sorted.sort((a,b) => parseFloat(b.price) - parseFloat(a.price));
+      else if (sort === 'name') sorted.sort((a,b) => (a.name||'').localeCompare(b.name||''));
+      else sorted.sort((a,b) => new Date(b.createdAt||0) - new Date(a.createdAt||0));
+      renderProducts(sorted);
+    }
+
+    function renderReviews(list) {
+      const container = document.getElementById('reviews-list');
+      const empty = document.getElementById('reviews-empty');
+
+      if (list.length === 0) {
+        container.innerHTML = '';
+        empty.classList.remove('hidden');
+        return;
+      }
+
+      empty.classList.add('hidden');
+      container.innerHTML = list.map(c => `
+        <div class="bg-dark-900/40 border border-dark-800/60 rounded-lg p-3">
+          <div class="flex items-center justify-between mb-1">
+            <span class="font-semibold text-white text-sm">${escapeHtml(c.author)}</span>
+            <span class="text-amber-400 text-xs font-bold">${'★'.repeat(c.rating || 5)}${'☆'.repeat(5-(c.rating||5))}</span>
+          </div>
+          <p class="text-dark-400 text-xs">${escapeHtml(c.text)}</p>
+          <div class="text-[10px] text-dark-600 mt-1">${c.createdAt ? new Date(c.createdAt).toLocaleDateString('es-MX') : ''}</div>
+        </div>
+      `).join('');
+    }
+
+    // Image preview
+    document.getElementById('prod-img').addEventListener('change', function() {
+      const file = this.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = e => {
+          document.getElementById('img-preview-src').src = e.target.result;
+          document.getElementById('img-preview').classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    // Add Product
+    document.getElementById('prod-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btnText = document.getElementById('prod-btn-text');
+      const spinner = document.getElementById('prod-spinner');
+      btnText.innerText = 'Guardando...';
+      spinner.classList.remove('hidden');
+
+      const formData = new FormData();
+      formData.append('name', document.getElementById('prod-name').value);
+      formData.append('price', document.getElementById('prod-price').value);
+      formData.append('description', document.getElementById('prod-desc').value);
+      formData.append('videoUrl', document.getElementById('prod-video').value);
+      formData.append('available', 'true');
+
+      const imgFile = document.getElementById('prod-img').files[0];
+      if (imgFile) formData.append('media', imgFile);
+
+      try {
+        const res = await fetch('/api/products', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` },
+          body: formData
+        });
+
+        if (res.ok) {
+          showToast('Producto agregado correctamente', 'success');
+          document.getElementById('prod-form').reset();
+          document.getElementById('img-preview').classList.add('hidden');
+          loadBizInfo();
+        } else {
+          const data = await res.json();
+          showToast(data.error || 'Error al guardar', 'error');
+        }
+      } catch(err) {
+        showToast('Error de conexión', 'error');
+      } finally {
+        btnText.innerText = 'Guardar Producto';
+        spinner.classList.add('hidden');
+      }
+    });
+
+    // Save Map URL
+    document.getElementById('map-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const mapUrl = document.getElementById('biz-map-url').value;
+      try {
+        const res = await fetch('/api/business/profile', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ mapUrl })
+        });
+        if (res.ok) showToast('Ubicación guardada', 'success');
+        else showToast('Error al guardar', 'error');
+      } catch(err) { showToast('Error de conexión', 'error'); }
+    });
+
+    // Edit Modal
+    function openEditModal(id) {
+      const p = allProducts.find(x => (x._id || x.id) === id);
+      if (!p) return;
+      document.getElementById('edit-id').value = id;
+      document.getElementById('edit-name').value = p.name || '';
+      document.getElementById('edit-price').value = p.price || '';
+      document.getElementById('edit-desc').value = p.description || '';
+      document.getElementById('edit-video').value = p.videoUrl || '';
+      document.getElementById('edit-available').checked = p.available !== false;
+      document.getElementById('edit-avail-text').innerText = p.available !== false ? 'Sí' : 'No';
+      document.getElementById('edit-modal').classList.add('active');
+    }
+
+    function closeEditModal() {
+      document.getElementById('edit-modal').classList.remove('active');
+    }
+
+    document.getElementById('edit-available').addEventListener('change', function() {
+      document.getElementById('edit-avail-text').innerText = this.checked ? 'Sí' : 'No';
+    });
+
+    document.getElementById('edit-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('edit-id').value;
+      const body = {
+        name: document.getElementById('edit-name').value,
+        price: document.getElementById('edit-price').value,
+        description: document.getElementById('edit-desc').value,
+        videoUrl: document.getElementById('edit-video').value,
+        available: document.getElementById('edit-available').checked
+      };
+      try {
+        const res = await fetch(`/api/products/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify(body)
+        });
+        if (res.ok) {
+          showToast('Producto actualizado', 'success');
+          closeEditModal();
+          loadBizInfo();
+        } else showToast('Error al actualizar', 'error');
+      } catch(err) { showToast('Error de conexión', 'error'); }
+    });
+
+    // Delete
+    function openDeleteModal(id) {
+      deleteTargetId = id;
+      document.getElementById('delete-modal').classList.add('active');
+    }
+    function closeDeleteModal() {
+      deleteTargetId = null;
+      document.getElementById('delete-modal').classList.remove('active');
+    }
+    async function confirmDelete() {
+      if (!deleteTargetId) return;
+      try {
+        const res = await fetch(`/api/products/${deleteTargetId}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          showToast('Producto eliminado', 'success');
+          closeDeleteModal();
+          loadBizInfo();
+        } else showToast('Error al eliminar', 'error');
+      } catch(err) { showToast('Error de conexión', 'error'); }
+    }
+
+    // Profile Modal
+    function openProfileModal() {
+      document.getElementById('profile-modal').classList.add('active');
+    }
+    function closeProfileModal() {
+      document.getElementById('profile-modal').classList.remove('active');
+    }
+
+    document.getElementById('profile-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const body = {
+        name: document.getElementById('profile-name').value,
+        description: document.getElementById('profile-desc').value,
+        email: document.getElementById('profile-email').value,
+        phone: document.getElementById('profile-phone').value
+      };
+      try {
+        const res = await fetch('/api/business/profile', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify(body)
+        });
+        if (res.ok) {
+          showToast('Perfil actualizado', 'success');
+          closeProfileModal();
+          loadBizInfo();
+        } else showToast('Error al actualizar', 'error');
+      } catch(err) { showToast('Error de conexión', 'error'); }
+    });
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+
+    // Close modals on overlay click
+    document.querySelectorAll('.modal-overlay').forEach(m => {
+      m.addEventListener('click', (e) => { if(e.target === m) m.classList.remove('active'); });
+    });
+
+    loadBizInfo();
+    loadQR();
+  </script>
+</body>
+</html>
