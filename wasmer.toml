@@ -1,0 +1,22 @@
+[package]
+name = "saas-menu-digital"
+version = "0.1.0"
+description = "SaaS de Menú Digital listo para Wasmer Edge"
+
+[[module]]
+name = "app"
+source = "."
+abi = "none"
+
+[app]
+name = "saas-menu-digital"
+exec = { image = "." }
+
+[app.env]
+PORT = "3000"
+JWT_SECRET = "secreto_super_seguro_wasmer_cloud"
+DB_HOST = "a512701-akamai-prod-7213411-default.g2a.akamaidb.net"
+DB_PORT = "15367"
+DB_USER = "akmadmin"
+DB_PASSWORD = "AVNS_hMbejD8QKds6DacqLlW"
+DB_NAME = "defaultdb"
