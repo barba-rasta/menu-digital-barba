@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MenuPro — Menús Digitales Profesionales para tu Negocio</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter','system-ui','sans-serif'] },
+          colors: {
+            brand: { 50:'#eef2ff',100:'#e0e7ff',200:'#c7d2fe',300:'#a5b4fc',400:'#818cf8',500:'#6366f1',600:'#4f46e5',700:'#4338ca',800:'#3730a3',900:'#312e81' },
+            dark: { 50:'#f8fafc',100:'#f1f5f9',200:'#e2e8f0',300:'#cbd5e1',400:'#94a3b8',500:'#64748b',600:'#475569',700:'#334155',800:'#1e293b',900:'#0f172a',950:'#020617' }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Inter', system-ui, sans-serif; }
+    .gradient-text { background: linear-gradient(135deg, #6366f1, #a855f7, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .glass { background: rgba(15,23,42,0.7); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.05); }
+    .card-hover { transition: all 0.3s cubic-bezier(0.4,0,0.2,1); }
+    .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 40px -10px rgba(99,102,241,0.2); }
+    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+    .float-anim { animation: float 4s ease-in-out infinite; }
+    @keyframes pulse-glow { 0%,100%{box-shadow:0 0 20px rgba(99,102,241,0.1)} 50%{box-shadow:0 0 40px rgba(99,102,241,0.3)} }
+    .pulse-glow { animation: pulse-glow 3s ease-in-out infinite; }
+    .slide-up { animation: slideUp 0.6s ease-out forwards; opacity:0; transform:translateY(30px); }
+    @keyframes slideUp { to { opacity:1; transform:translateY(0); } }
+    .toast { position:fixed; bottom:24px; right:24px; z-index:100; transform:translateY(100px); opacity:0; transition:all 0.4s cubic-bezier(0.175,0.885,0.32,1.275); }
+    .toast.show { transform:translateY(0); opacity:1; }
+    .input-anim { transition: all 0.2s; border: 1px solid #334155; }
+    .input-anim:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
+    .tab-active { color: #6366f1; border-bottom: 2px solid #6366f1; }
+    .tab-inactive { color: #94a3b8; border-bottom: 2px solid transparent; }
+    .tab-inactive:hover { color: #e2e8f0; }
+    .shimmer { background: linear-gradient(90deg, transparent, rgba(255,255,255,0.03), transparent); background-size: 200% 100%; animation: shimmer 2s infinite; }
+    @keyframes shimmer { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
+  </style>
+</head>
+<body class="bg-dark-950 text-dark-100 min-h-screen overflow-x-hidden">
+
+  <!-- Partículas decorativas -->
+  <div class="fixed inset-0 pointer-events-none overflow-hidden z-0">
+    <div class="absolute top-20 left-10 w-72 h-72 bg-brand-600/10 rounded-full blur-3xl"></div>
+    <div class="absolute bottom-20 right-10 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl"></div>
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-brand-500/5 rounded-full blur-3xl"></div>
+  </div>
+
+  <!-- Navbar -->
+  <nav class="fixed top-0 w-full z-50 glass">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-brand-500/20">M</div>
+          <span class="font-extrabold text-lg tracking-tight text-white">Menu<span class="text-brand-400">Pro</span></span>
+        </div>
+        <div class="hidden md:flex items-center gap-8">
+          <a href="#features" class="text-sm text-dark-400 hover:text-white transition">Funciones</a>
+          <a href="#how-it-works" class="text-sm text-dark-400 hover:text-white transition">Cómo funciona</a>
+          <a href="#pricing" class="text-sm text-dark-400 hover:text-white transition">Precios</a>
+          <button onclick="scrollToAuth()" class="bg-brand-600 hover:bg-brand-500 text-white text-sm font-semibold px-5 py-2 rounded-lg shadow-lg shadow-brand-600/20 transition-all hover:shadow-brand-600/40">
+            Comenzar Gratis
+          </button>
+        </div>
+        <button onclick="scrollToAuth()" class="md:hidden bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold px-4 py-2 rounded-lg">Entrar</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="relative pt-32 pb-20 px-4">
+    <div class="max-w-6xl mx-auto text-center">
+      <div class="inline-flex items-center gap-2 bg-brand-500/10 border border-brand-500/20 text-brand-300 text-xs font-semibold px-4 py-1.5 rounded-full mb-6 slide-up" style="animation-delay:0.1s">
+        <span class="w-2 h-2 rounded-full bg-brand-400 animate-pulse"></span>
+        Plataforma #1 en Menús Digitales 2026
+      </div>
+
+      <h1 class="text-5xl md:text-7xl font-black text-white tracking-tight leading-[1.1] mb-6 slide-up" style="animation-delay:0.2s">
+        Tu negocio merece un<br><span class="gradient-text">Menú Digital Pro</span>
+      </h1>
+
+      <p class="text-dark-400 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed mb-10 slide-up" style="animation-delay:0.3s">
+        Crea tu catálogo en minutos. Genera códigos QR, recibe pedidos por WhatsApp, 
+        gestiona reseñas y mide el rendimiento — todo en una sola plataforma.
+      </p>
+
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16 slide-up" style="animation-delay:0.4s">
+        <button onclick="scrollToAuth()" class="bg-brand-600 hover:bg-brand-500 text-white font-bold px-8 py-4 rounded-xl shadow-xl shadow-brand-600/25 transition-all hover:shadow-brand-600/40 hover:-translate-y-0.5 text-base">
+          Crear mi Menú Gratis →
+        </button>
+        <button onclick="showDemoModal()" class="bg-dark-800 hover:bg-dark-700 text-dark-200 font-semibold px-8 py-4 rounded-xl border border-dark-700 transition-all hover:-translate-y-0.5 text-base">
+          Ver Demo en Vivo
+        </button>
+      </div>
+
+      <!-- Stats -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto slide-up" style="animation-delay:0.5s">
+        <div class="bg-dark-900/80 border border-dark-800 rounded-2xl p-5">
+          <div class="text-2xl font-black text-white">2,400+</div>
+          <div class="text-xs text-dark-500 mt-1">Negocios activos</div>
+        </div>
+        <div class="bg-dark-900/80 border border-dark-800 rounded-2xl p-5">
+          <div class="text-2xl font-black text-brand-400">150K+</div>
+          <div class="text-xs text-dark-500 mt-1">Pedidos recibidos</div>
+        </div>
+        <div class="bg-dark-900/80 border border-dark-800 rounded-2xl p-5">
+          <div class="text-2xl font-black text-emerald-400">4.9★</div>
+          <div class="text-xs text-dark-500 mt-1">Calificación promedio</div>
+        </div>
+        <div class="bg-dark-900/80 border border-dark-800 rounded-2xl p-5">
+          <div class="text-2xl font-black text-purple-400">100%</div>
+          <div class="text-xs text-dark-500 mt-1">Sin comisiones</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Grid -->
+  <section id="features" class="py-20 px-4 border-t border-dark-800">
+    <div class="max-w-6xl mx-auto">
+      <div class="text-center mb-14">
+        <h2 class="text-3xl md:text-4xl font-black text-white mb-3">Todo lo que necesitas</h2>
+        <p class="text-dark-400 max-w-xl mx-auto">Herramientas profesionales diseñadas para hacer crecer tu negocio.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div class="bg-dark-900/60 border border-dark-800 rounded-2xl p-6 card-hover group">
+          <div class="w-12 h-12 rounded-xl bg-brand-500/10 border border-brand-500/20 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition">📱</div>
+          <h3 class="font-bold text-white text-lg mb-2">Código QR Dinámico</h3>
+          <p class="text-dark-500 text-sm leading-relaxed">Genera un QR único para tu negocio. Los clientes escanean y ven tu menú al instante. Sin apps, sin complicaciones.</p>
+        </div>
+
+        <div class="bg-dark-900/60 border border-dark-800 rounded-2xl p-6 card-hover group">
+          <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition">💬</div>
+          <h3 class="font-bold text-white text-lg mb-2">Pedidos por WhatsApp</h3>
+          <p class="text-dark-500 text-sm leading-relaxed">Tus clientes piden directo a tu WhatsApp. Sin intermediarios, sin comisiones. Recibe pedidos en tiempo real.</p>
+        </div>
+
+        <div class="bg-dark-900/60 border border-dark-800 rounded-2xl p-6 card-hover group">
+          <div class="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition">🎬</div>
+          <h3 class="font-bold text-white text-lg mb-2">Fotos, Videos y Galería</h3>
+          <p class="text-dark-500 text-sm leading-relaxed">Muestra tus platillos con fotos profesionales y videos de YouTube o TikTok. Atrae más clientes con contenido visual.</p>
+        </div>
+
+        <div class="bg-dark-900/60 border border-dark-800 rounded-2xl p-6 card-hover group">
+          <div class="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition">⭐</div>
+          <h3 class="font-bold text-white text-lg mb-2">Reseñas y Calificaciones</h3>
+          <p class="text-dark-500 text-sm leading-relaxed">Tus clientes califican tu negocio con estrellas. Construye reputación y confianza con opiniones verificadas.</p>
+        </div>
+
+        <div class="bg-dark-900/60 border border-dark-800 rounded-2xl p-6 card-hover group">
+          <div class="w-12 h-12 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition">📍</div>
+          <h3 class="font-bold text-white text-lg mb-2">Ubicación GPS</h3>
+          <p class="text-dark-500 text-sm leading-relaxed">Conecta tu ubicación de Google Maps. Tus clientes saben exactamente cómo llegar a tu local.</p>
+        </div>
+
+        <div class="bg-dark-900/60 border border-dark-800 rounded-2xl p-6 card-hover group">
+          <div class="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition">📊</div>
+          <h3 class="font-bold text-white text-lg mb-2">Estadísticas en Tiempo Real</h3>
+          <p class="text-dark-500 text-sm leading-relaxed">Visualiza visitas, pedidos, calificaciones y productos más populares. Toma decisiones basadas en datos.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How it Works -->
+  <section id="how-it-works" class="py-20 px-4 border-t border-dark-800 bg-dark-900/30">
+    <div class="max-w-5xl mx-auto">
+      <div class="text-center mb-14">
+        <h2 class="text-3xl md:text-4xl font-black text-white mb-3">Cómo funciona</h2>
+        <p class="text-dark-400">De la idea al menú digital en 3 pasos simples.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="relative text-center">
+          <div class="w-16 h-16 mx-auto rounded-2xl bg-brand-600 text-white text-2xl font-black flex items-center justify-center mb-4 shadow-lg shadow-brand-600/30">1</div>
+          <h3 class="font-bold text-white text-lg mb-2">Registra tu Negocio</h3>
+          <p class="text-dark-500 text-sm">Crea tu cuenta en segundos. Define tu nombre, slug único, WhatsApp y descripción.</p>
+          <div class="hidden md:block absolute top-8 left-[calc(50%+40px)] w-[calc(100%-80px)] h-0.5 bg-gradient-to-r from-brand-600/50 to-transparent"></div>
+        </div>
+
+        <div class="relative text-center">
+          <div class="w-16 h-16 mx-auto rounded-2xl bg-brand-600 text-white text-2xl font-black flex items-center justify-center mb-4 shadow-lg shadow-brand-600/30">2</div>
+          <h3 class="font-bold text-white text-lg mb-2">Agrega tus Productos</h3>
+          <p class="text-dark-500 text-sm">Sube fotos, precios, descripciones y videos. Organiza todo desde tu panel de control.</p>
+          <div class="hidden md:block absolute top-8 left-[calc(50%+40px)] w-[calc(100%-80px)] h-0.5 bg-gradient-to-r from-brand-600/50 to-transparent"></div>
+        </div>
+
+        <div class="text-center">
+          <div class="w-16 h-16 mx-auto rounded-2xl bg-brand-600 text-white text-2xl font-black flex items-center justify-center mb-4 shadow-lg shadow-brand-600/30">3</div>
+          <h3 class="font-bold text-white text-lg mb-2">Comparte tu QR</h3>
+          <p class="text-dark-500 text-sm">Descarga tu código QR, imprímelo y colócalo en mesas. Tus clientes escanean y piden.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing -->
+  <section id="pricing" class="py-20 px-4 border-t border-dark-800">
+    <div class="max-w-4xl mx-auto">
+      <div class="text-center mb-14">
+        <h2 class="text-3xl md:text-4xl font-black text-white mb-3">Precios transparentes</h2>
+        <p class="text-dark-400">Sin contratos, sin comisiones, sin sorpresas.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
+        <div class="bg-dark-900/60 border border-dark-800 rounded-2xl p-8">
+          <div class="text-xs font-bold text-brand-400 uppercase tracking-wider mb-2">Gratis</div>
+          <div class="text-4xl font-black text-white mb-1">$0<span class="text-lg text-dark-500 font-normal">/mes</span></div>
+          <p class="text-dark-500 text-sm mb-6">Perfecto para empezar</p>
+          <ul class="space-y-3 mb-8">
+            <li class="flex items-center gap-2 text-sm text-dark-300"><span class="text-emerald-400">✓</span> Hasta 20 productos</li>
+            <li class="flex items-center gap-2 text-sm text-dark-300"><span class="text-emerald-400">✓</span> Código QR incluido</li>
+            <li class="flex items-center gap-2 text-sm text-dark-300"><span class="text-emerald-400">✓</span> Pedidos por WhatsApp</li>
+            <li class="flex items-center gap-2 text-sm text-dark-300"><span class="text-emerald-400">✓</span> Reseñas y calificaciones</li>
+            <li class="flex items-center gap-2 text-sm text-dark-300"><span class="text-emerald-400">✓</span> Ubicación GPS</li>
+          </ul>
+          <button onclick="scrollToAuth()" class="w-full bg-dark-800 hover:bg-dark-700 text-white font-semibold py-3 rounded-xl border border-dark-700 transition">Empezar Gratis</button>
+        </div>
+
+        <div class="bg-gradient-to-b from-brand-600/20 to-dark-900/60 border border-brand-500/30 rounded-2xl p-8 relative overflow-hidden">
+          <div class="absolute top-0 right-0 bg-brand-500 text-white text-[10px] font-bold px-3 py-1 rounded-bl-xl">POPULAR</div>
+          <div class="text-xs font-bold text-brand-400 uppercase tracking-wider mb-2">Pro</div>
+          <div class="text-4xl font-black text-white mb-1">$9<span class="text-lg text-dark-500 font-normal">/mes</span></div>
+          <p class="text-dark-500 text-sm mb-6">Para negocios en crecimiento</p>
+          <ul class="space-y-3 mb-8">
+            <li class="flex items-center gap-2 text-sm text-dark-300"><span class="text-brand-400">✓</span> Productos ilimitados</li>
+            <li class="flex items-center gap-2 text-sm text-dark-300"><span class="text-brand-400">✓</span> Fotos y videos ilimitados</li>
+            <li class="flex items-center gap-2 text-sm text-dark-300"><span class="text-brand-400">✓</span> Estadísticas avanzadas</li>
+            <li class="flex items-center gap-2 text-sm text-dark-300"><span class="text-brand-400">✓</span> Dominio personalizado</li>
+            <li class="flex items-center gap-2 text-sm text-dark-300"><span class="text-brand-400">✓</span> Soporte prioritario</li>
+            <li class="flex items-center gap-2 text-sm text-dark-300"><span class="text-brand-400">✓</span> Sin marca MenuPro</li>
+          </ul>
+          <button onclick="scrollToAuth()" class="w-full bg-brand-600 hover:bg-brand-500 text-white font-bold py-3 rounded-xl shadow-lg shadow-brand-600/25 transition">Obtener Pro</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Auth Section -->
+  <section id="auth-section" class="py-20 px-4 border-t border-dark-800 bg-dark-900/30">
+    <div class="max-w-md mx-auto">
+      <div class="text-center mb-8">
+        <h2 class="text-2xl font-black text-white mb-1">Accede a tu Panel</h2>
+        <p class="text-dark-500 text-sm">Gestiona tu menú digital desde cualquier lugar.</p>
+      </div>
+
+      <div class="bg-dark-900/80 border border-dark-800 rounded-2xl p-8 shadow-2xl">
+        <!-- Tabs -->
+        <div class="flex mb-6">
+          <button id="tab-login" onclick="switchTab('login')" class="flex-1 py-3 font-bold text-sm tab-active transition">
+            Iniciar Sesión
+          </button>
+          <button id="tab-reg" onclick="switchTab('reg')" class="flex-1 py-3 font-bold text-sm tab-inactive transition">
+            Crear Cuenta
+          </button>
+        </div>
+
+        <!-- Login Form -->
+        <form id="login-form" class="space-y-4">
+          <div>
+            <label class="block text-xs font-semibold text-dark-400 uppercase tracking-wider mb-2">Correo Electrónico</label>
+            <input type="email" id="login-email" required placeholder="tu@negocio.com" 
+                   class="w-full bg-dark-950 input-anim rounded-xl px-4 py-3 text-sm text-white placeholder-dark-600 focus:outline-none">
+            <div id="login-email-error" class="text-rose-400 text-xs mt-1 hidden">Ingresa un correo válido</div>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-dark-400 uppercase tracking-wider mb-2">Contraseña</label>
+            <div class="relative">
+              <input type="password" id="login-pass" required placeholder="••••••••" 
+                     class="w-full bg-dark-950 input-anim rounded-xl px-4 py-3 text-sm text-white placeholder-dark-600 focus:outline-none pr-10">
+              <button type="button" onclick="togglePassword('login-pass', this)" class="absolute right-3 top-3 text-dark-500 hover:text-dark-300 text-sm">👁</button>
+            </div>
+          </div>
+          <button type="submit" id="login-btn" class="w-full bg-brand-600 hover:bg-brand-500 text-white font-bold py-3 rounded-xl shadow-lg shadow-brand-600/20 transition flex items-center justify-center gap-2">
+            <span id="login-btn-text">Entrar a mi Panel</span>
+            <span id="login-spinner" class="hidden w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+          </button>
+        </form>
+
+        <!-- Register Form -->
+        <form id="reg-form" class="space-y-4 hidden">
+          <div>
+            <label class="block text-xs font-semibold text-dark-400 uppercase tracking-wider mb-2">Nombre del Negocio</label>
+            <input type="text" id="reg-name" placeholder="Ej. Tacos El Rey" required 
+                   class="w-full bg-dark-950 input-anim rounded-xl px-4 py-3 text-sm text-white placeholder-dark-600 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-dark-400 uppercase tracking-wider mb-2">Identificador (Slug)</label>
+            <div class="relative">
+              <span class="absolute left-4 top-3 text-dark-600 text-sm">menu.pro/</span>
+              <input type="text" id="reg-slug" placeholder="tacos-el-rey" required 
+                     class="w-full bg-dark-950 input-anim rounded-xl pl-[5.5rem] pr-4 py-3 text-sm text-white placeholder-dark-600 focus:outline-none"
+                     oninput="validateSlug(this)">
+            </div>
+            <div class="flex items-center gap-2 mt-1">
+              <span id="slug-status" class="text-xs"></span>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-dark-400 uppercase tracking-wider mb-2">Correo</label>
+              <input type="email" id="reg-email" placeholder="contacto@..." required 
+                     class="w-full bg-dark-950 input-anim rounded-xl px-4 py-3 text-sm text-white placeholder-dark-600 focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-dark-400 uppercase tracking-wider mb-2">WhatsApp</label>
+              <input type="text" id="reg-phone" placeholder="521234567890" required 
+                     class="w-full bg-dark-950 input-anim rounded-xl px-4 py-3 text-sm text-white placeholder-dark-600 focus:outline-none">
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-dark-400 uppercase tracking-wider mb-2">Contraseña</label>
+            <div class="relative">
+              <input type="password" id="reg-pass" required placeholder="Mínimo 6 caracteres" 
+                     class="w-full bg-dark-950 input-anim rounded-xl px-4 py-3 text-sm text-white placeholder-dark-600 focus:outline-none pr-10"
+                     oninput="checkPasswordStrength(this.value)">
+              <button type="button" onclick="togglePassword('reg-pass', this)" class="absolute right-3 top-3 text-dark-500 hover:text-dark-300 text-sm">👁</button>
+            </div>
+            <div class="flex gap-1 mt-2">
+              <div id="pw-bar-1" class="h-1 flex-1 rounded-full bg-dark-800 transition"></div>
+              <div id="pw-bar-2" class="h-1 flex-1 rounded-full bg-dark-800 transition"></div>
+              <div id="pw-bar-3" class="h-1 flex-1 rounded-full bg-dark-800 transition"></div>
+              <div id="pw-bar-4" class="h-1 flex-1 rounded-full bg-dark-800 transition"></div>
+            </div>
+            <div id="pw-text" class="text-xs text-dark-500 mt-1">Fortaleza de contraseña</div>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-dark-400 uppercase tracking-wider mb-2">Descripción</label>
+            <textarea id="reg-desc" placeholder="¿Qué vendes? ¿Cuál es tu especialidad?" rows="2" 
+                      class="w-full bg-dark-950 input-anim rounded-xl px-4 py-3 text-sm text-white placeholder-dark-600 focus:outline-none resize-none"></textarea>
+          </div>
+          <button type="submit" id="reg-btn" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl shadow-lg shadow-emerald-600/20 transition flex items-center justify-center gap-2">
+            <span id="reg-btn-text">Crear mi Menú Digital</span>
+            <span id="reg-spinner" class="hidden w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+          </button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="border-t border-dark-800 py-10 px-4">
+    <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm">M</div>
+        <span class="font-bold text-white">MenuPro</span>
+      </div>
+      <div class="text-dark-500 text-xs">
+        Plataforma profesional de menús digitales · Desarrollada con ❤️
+      </div>
+      <div class="flex items-center gap-4">
+        <a href="#" class="text-dark-500 hover:text-white text-xs transition">Términos</a>
+        <a href="#" class="text-dark-500 hover:text-white text-xs transition">Privacidad</a>
+        <a href="#" class="text-dark-500 hover:text-white text-xs transition">Soporte</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Demo Modal -->
+  <div id="demo-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-dark-950/90 backdrop-blur-md">
+    <div class="bg-dark-900 border border-dark-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative">
+      <button onclick="closeDemoModal()" class="absolute top-4 right-4 text-dark-500 hover:text-white text-xl">×</button>
+      <h3 class="text-xl font-bold text-white mb-2">Demo en Vivo</h3>
+      <p class="text-dark-400 text-sm mb-4">Explora un menú digital real para ver cómo se vería el tuyo:</p>
+      <div class="bg-dark-950 rounded-xl p-4 border border-dark-800">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-12 h-12 rounded-full bg-brand-600 flex items-center justify-center text-xl">🌮</div>
+          <div>
+            <div class="font-bold text-white">Tacos El Rey</div>
+            <div class="text-xs text-dark-500">Los mejores tacos de la ciudad</div>
+          </div>
+        </div>
+        <div class="space-y-2">
+          <div class="flex items-center gap-3 bg-dark-900 rounded-lg p-3">
+            <div class="w-14 h-14 bg-dark-800 rounded-lg flex items-center justify-center text-xl">🌯</div>
+            <div class="flex-1">
+              <div class="font-semibold text-white text-sm">Taco de Pastor</div>
+              <div class="text-xs text-dark-500">Carne al pastor, piña, cebolla y cilantro</div>
+              <div class="text-brand-400 font-bold text-sm mt-0.5">$25.00</div>
+            </div>
+            <button class="bg-emerald-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg">Pedir</button>
+          </div>
+          <div class="flex items-center gap-3 bg-dark-900 rounded-lg p-3">
+            <div class="w-14 h-14 bg-dark-800 rounded-lg flex items-center justify-center text-xl">🥩</div>
+            <div class="flex-1">
+              <div class="font-semibold text-white text-sm">Taco de Arrachera</div>
+              <div class="text-xs text-dark-500">Arrachera marinada, queso y guacamole</div>
+              <div class="text-brand-400 font-bold text-sm mt-0.5">$35.00</div>
+            </div>
+            <button class="bg-emerald-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg">Pedir</button>
+          </div>
+        </div>
+      </div>
+      <div class="mt-4 text-center">
+        <button onclick="closeDemoModal(); scrollToAuth()" class="bg-brand-600 hover:bg-brand-500 text-white font-bold px-6 py-2 rounded-xl transition">Crear el mío →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast">
+    <div class="bg-dark-900 border border-dark-700 rounded-xl px-5 py-3 shadow-2xl flex items-center gap-3">
+      <span id="toast-icon" class="text-xl"></span>
+      <span id="toast-msg" class="text-sm text-white font-medium"></span>
+    </div>
+  </div>
+
+  <script>
+    // Toast system
+    function showToast(msg, type='info') {
+      const toast = document.getElementById('toast');
+      const icon = document.getElementById('toast-icon');
+      const text = document.getElementById('toast-msg');
+      text.innerText = msg;
+      icon.innerText = type === 'success' ? '✅' : type === 'error' ? '❌' : type === 'warning' ? '⚠️' : 'ℹ️';
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3500);
+    }
+
+    function scrollToAuth() {
+      document.getElementById('auth-section').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function showDemoModal() {
+      document.getElementById('demo-modal').classList.remove('hidden');
+      document.getElementById('demo-modal').classList.add('flex');
+    }
+
+    function closeDemoModal() {
+      document.getElementById('demo-modal').classList.add('hidden');
+      document.getElementById('demo-modal').classList.remove('flex');
+    }
+
+    function switchTab(type) {
+      const loginForm = document.getElementById('login-form');
+      const regForm = document.getElementById('reg-form');
+      const tabLogin = document.getElementById('tab-login');
+      const tabReg = document.getElementById('tab-reg');
+
+      if(type === 'login') {
+        loginForm.classList.remove('hidden');
+        regForm.classList.add('hidden');
+        tabLogin.className = 'flex-1 py-3 font-bold text-sm tab-active transition';
+        tabReg.className = 'flex-1 py-3 font-bold text-sm tab-inactive transition';
+      } else {
+        loginForm.classList.add('hidden');
+        regForm.classList.remove('hidden');
+        tabReg.className = 'flex-1 py-3 font-bold text-sm tab-active transition';
+        tabLogin.className = 'flex-1 py-3 font-bold text-sm tab-inactive transition';
+      }
+    }
+
+    function togglePassword(id, btn) {
+      const input = document.getElementById(id);
+      input.type = input.type === 'password' ? 'text' : 'password';
+      btn.innerText = input.type === 'password' ? '👁' : '🙈';
+    }
+
+    function validateSlug(input) {
+      const val = input.value.toLowerCase().replace(/[^a-z0-9-]/g, '').replace(/-+/g, '-');
+      input.value = val;
+      const status = document.getElementById('slug-status');
+      if (val.length < 3) {
+        status.innerHTML = '<span class="text-amber-400">●</span> <span class="text-dark-500">Mínimo 3 caracteres</span>';
+      } else {
+        status.innerHTML = '<span class="text-emerald-400">●</span> <span class="text-dark-500">Disponible</span>';
+      }
+    }
+
+    function checkPasswordStrength(val) {
+      let strength = 0;
+      if (val.length >= 6) strength++;
+      if (val.length >= 10) strength++;
+      if (/[A-Z]/.test(val)) strength++;
+      if (/[0-9]/.test(val)) strength++;
+      if (/[^A-Za-z0-9]/.test(val)) strength++;
+
+      const bars = [1,2,3,4].map(i => document.getElementById(`pw-bar-${i}`));
+      const text = document.getElementById('pw-text');
+      const colors = ['bg-dark-800', 'bg-rose-500', 'bg-amber-500', 'bg-emerald-500', 'bg-brand-500'];
+      const labels = ['Muy débil', 'Débil', 'Regular', 'Fuerte', 'Muy fuerte'];
+
+      bars.forEach((bar, i) => {
+        bar.className = `h-1 flex-1 rounded-full transition ${i < Math.min(strength, 4) ? colors[Math.min(strength, 4)] : 'bg-dark-800'}`;
+      });
+      text.innerText = labels[Math.min(strength, 4)];
+      text.className = `text-xs mt-1 ${strength <= 1 ? 'text-rose-400' : strength <= 2 ? 'text-amber-400' : 'text-emerald-400'}`;
+    }
+
+    // Login
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('login-email').value;
+      const password = document.getElementById('login-pass').value;
+      const btnText = document.getElementById('login-btn-text');
+      const spinner = document.getElementById('login-spinner');
+
+      btnText.innerText = 'Verificando...';
+      spinner.classList.remove('hidden');
+
+      try {
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+          localStorage.setItem('token', data.token);
+          localStorage.setItem('slug', data.slug);
+          showToast('¡Bienvenido de vuelta!', 'success');
+          setTimeout(() => window.location.href = '/dashboard.html', 800);
+        } else {
+          showToast(data.error || 'Credenciales incorrectas', 'error');
+        }
+      } catch(err) {
+        showToast('Error de conexión. Intenta de nuevo.', 'error');
+      } finally {
+        btnText.innerText = 'Entrar a mi Panel';
+        spinner.classList.add('hidden');
+      }
+    });
+
+    // Register
+    document.getElementById('reg-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('reg-name').value;
+      const slug = document.getElementById('reg-slug').value;
+      const email = document.getElementById('reg-email').value;
+      const password = document.getElementById('reg-pass').value;
+      const phone = document.getElementById('reg-phone').value;
+      const description = document.getElementById('reg-desc').value;
+
+      if (password.length < 6) {
+        showToast('La contraseña debe tener al menos 6 caracteres', 'warning');
+        return;
+      }
+      if (slug.length < 3) {
+        showToast('El slug debe tener al menos 3 caracteres', 'warning');
+        return;
+      }
+
+      const btnText = document.getElementById('reg-btn-text');
+      const spinner = document.getElementById('reg-spinner');
+      btnText.innerText = 'Creando cuenta...';
+      spinner.classList.remove('hidden');
+
+      try {
+        const res = await fetch('/api/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, slug, email, password, phone, description })
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+          showToast('¡Cuenta creada! Ahora inicia sesión.', 'success');
+          document.getElementById('reg-form').reset();
+          switchTab('login');
+        } else {
+          showToast(data.error || 'Error al crear la cuenta', 'error');
+        }
+      } catch(err) {
+        showToast('Error de conexión. Intenta de nuevo.', 'error');
+      } finally {
+        btnText.innerText = 'Crear mi Menú Digital';
+        spinner.classList.add('hidden');
+      }
+    });
+
+    // Intersection Observer for animations
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.style.animationPlayState = 'running';
+        }
+      });
+    });
+    document.querySelectorAll('.slide-up').forEach(el => observer.observe(el));
+  </script>
+</body>
+</html>
